@@ -1,13 +1,17 @@
 import React, { useState, useRef } from 'react';
-import { 
-  Upload, 
-  X, 
-  ChevronLeft, 
+import {
+  Upload,
+  X,
+  ChevronLeft,
+  ChevronUp,
+  ChevronDown,
   Loader2,
-  Save
+  Save,
 } from 'lucide-react';
 import { Product, ProductFormData } from '../types';
 import { supabase } from '../utils/supabaseClient';
+
+type ImageItem = { type: 'url'; url: string } | { type: 'file'; file: File };
 
 interface ProductFormProps {
   mode: 'create' | 'edit';
@@ -16,106 +20,93 @@ interface ProductFormProps {
   onCancel: () => void;
 }
 
-export const ProductForm: React.FC<ProductFormProps> = ({ 
-  mode, 
-  initialData, 
-  onSubmit, 
-  onCancel 
+export const ProductForm: React.FC<ProductFormProps> = ({
+  mode,
+  initialData,
+  onSubmit,
+  onCancel,
 }) => {
   const [title, setTitle] = useState(initialData?.title || '');
   const [tag, setTag] = useState(initialData?.tag || '');
   const [description, setDescription] = useState(initialData?.description || '');
-  // Stores URLs for display
-  const [images, setImages] = useState<string[]>(initialData?.images || []);
-  // Stores raw files pending upload
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  
+  const [imageItems, setImageItems] = useState<ImageItem[]>(() =>
+    (initialData?.images || []).map((url) => ({ type: 'url' as const, url }))
+  );
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setError(null);
-      const filesArray = Array.from(e.target.files) as File[];
-      
-      const totalCount = images.length + pendingFiles.length + filesArray.length;
-      if (totalCount > 10) {
-        setError("You can only have a maximum of 10 images.");
-        return;
-      }
-
-      // Add to pending
-      setPendingFiles(prev => [...prev, ...filesArray]);
-      
-      // Reset input
-      if (fileInputRef.current) fileInputRef.current.value = '';
+    if (!e.target.files?.length) return;
+    setError(null);
+    const files = Array.from(e.target.files) as File[];
+    if (imageItems.length + files.length > 10) {
+      setError('You can only have a maximum of 10 images.');
+      return;
     }
+    setImageItems((prev) => [...prev, ...files.map((file) => ({ type: 'file' as const, file }))]);
+    e.target.value = '';
   };
 
-  const removePendingFile = (index: number) => {
-    setPendingFiles(prev => prev.filter((_, i) => i !== index));
+  const removeImage = (index: number) => {
+    setImageItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const removeExistingImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
+  const moveImage = (index: number, direction: -1 | 1) => {
+    const next = index + direction;
+    if (next < 0 || next >= imageItems.length) return;
+    setImageItems((prev) => {
+      const arr = [...prev];
+      [arr[index], arr[next]] = [arr[next], arr[index]];
+      return arr;
+    });
   };
 
-  const uploadImages = async (): Promise<string[]> => {
-    const uploadedUrls: string[] = [];
-
-    for (const file of pendingFiles) {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `${fileName}`;
-
+  const uploadFiles = async (files: File[]): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const file of files) {
+      const ext = file.name.split('.').pop();
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(filePath, file, { upsert: false });
-
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError);
-        throw new Error(`图片上传失败: ${uploadError.message}`);
-      }
-
-      const { data } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
-
-      if (data?.publicUrl) {
-        uploadedUrls.push(data.publicUrl);
-      }
+        .upload(path, file, { upsert: false });
+      if (uploadError) throw new Error(`图片上传失败: ${uploadError.message}`);
+      const { data } = supabase.storage.from('product-images').getPublicUrl(path);
+      if (data?.publicUrl) urls.push(data.publicUrl);
     }
-    return uploadedUrls;
+    return urls;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      setError("Product title is required.");
+      setError('Product title is required.');
       return;
     }
-    if (images.length === 0 && pendingFiles.length === 0) {
-      setError("At least one product image is required.");
+    if (imageItems.length === 0) {
+      setError('At least one product image is required.');
       return;
     }
-
     setIsSubmitting(true);
-    
     setError(null);
     try {
-      // 1. Upload pending images
-      const newImageUrls = await uploadImages();
-      
-      // 2. Combine with existing images
-      const finalImageList = [...images, ...newImageUrls];
-
-      // 3. Submit data (await so we catch DB errors)
-      await onSubmit({ title, description, images: finalImageList, tag: tag.trim() || undefined });
+      const filesInOrder = imageItems
+        .filter((item): item is { type: 'file'; file: File } => item.type === 'file')
+        .map((item) => item.file);
+      const uploadedUrls = await uploadFiles(filesInOrder);
+      let fileIndex = 0;
+      const finalImageList = imageItems.map((item) =>
+        item.type === 'url' ? item.url : uploadedUrls[fileIndex++]
+      );
+      await onSubmit({
+        title,
+        description,
+        images: finalImageList,
+        tag: tag.trim() || undefined,
+      });
     } catch (err: any) {
-      console.error(err);
-      const msg = err?.message || err?.error_description || "Failed to save product. Please try again.";
+      const msg = err?.message || err?.error_description || 'Failed to save product. Please try again.';
       setError(msg);
     } finally {
       setIsSubmitting(false);
@@ -142,17 +133,17 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">
           
-          {/* Image Upload Section */}
+          {/* Image Upload & Order */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <label className="block text-sm font-semibold text-slate-900">Product Images</label>
-              <span className="text-xs text-slate-500">{images.length + pendingFiles.length} / 10 images</span>
+              <span className="text-xs text-slate-500">
+                {imageItems.length} / 10 · 顺序即前台显示顺序，首张为默认图
+              </span>
             </div>
-            
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {/* Upload Button */}
-              {images.length + pendingFiles.length < 10 && (
-                <div 
+              {imageItems.length < 10 && (
+                <div
                   onClick={() => fileInputRef.current?.click()}
                   className="aspect-square rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-primary-400 transition-all cursor-pointer flex flex-col items-center justify-center group"
                 >
@@ -162,50 +153,67 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   <span className="text-xs font-medium text-slate-500 group-hover:text-primary-600">Upload</span>
                 </div>
               )}
-
-              {/* Existing Images */}
-              {images.map((img, idx) => (
-                <div key={`existing-${idx}`} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm">
-                  <img src={img} alt={`Existing ${idx}`} className="w-full h-full object-cover" />
+              {imageItems.map((item, idx) => (
+                <div
+                  key={item.type === 'url' ? item.url : `${idx}-${(item.file as File).name}`}
+                  className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm"
+                >
+                  {item.type === 'url' ? (
+                    <img src={item.url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <>
+                      <img
+                        src={URL.createObjectURL(item.file)}
+                        alt=""
+                        className="w-full h-full object-cover opacity-90"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="bg-black/50 text-white text-[10px] px-2 py-1 rounded-full">Pending</span>
+                      </div>
+                    </>
+                  )}
                   <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-all duration-200" />
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity scale-90 group-hover:scale-100 duration-200">
+                  <div className="absolute top-2 right-2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <button
                       type="button"
-                      onClick={() => removeExistingImage(idx)}
+                      onClick={() => moveImage(idx, -1)}
+                      disabled={idx === 0}
+                      className="p-1.5 bg-white rounded-lg hover:bg-slate-100 shadow-sm border border-slate-100 disabled:opacity-40 disabled:pointer-events-none"
+                      title="上移"
+                    >
+                      <ChevronUp size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveImage(idx, 1)}
+                      disabled={idx === imageItems.length - 1}
+                      className="p-1.5 bg-white rounded-lg hover:bg-slate-100 shadow-sm border border-slate-100 disabled:opacity-40 disabled:pointer-events-none"
+                      title="下移"
+                    >
+                      <ChevronDown size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeImage(idx)}
                       className="p-1.5 bg-white text-slate-700 rounded-lg hover:bg-red-50 hover:text-red-600 shadow-sm border border-slate-100"
+                      title="删除"
                     >
                       <X size={14} />
                     </button>
                   </div>
-                </div>
-              ))}
-
-              {/* Pending Files Previews */}
-              {pendingFiles.map((file, idx) => (
-                <div key={`pending-${idx}`} className="relative group aspect-square rounded-xl overflow-hidden border border-primary-200 bg-primary-50 shadow-sm">
-                  <img src={URL.createObjectURL(file)} alt={`Pending ${idx}`} className="w-full h-full object-cover opacity-80" />
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                     <span className="bg-black/50 text-white text-[10px] px-2 py-1 rounded-full">Pending</span>
-                  </div>
-                  <div className="absolute top-2 right-2">
-                    <button
-                      type="button"
-                      onClick={() => removePendingFile(idx)}
-                      className="p-1.5 bg-white text-slate-700 rounded-lg hover:bg-red-50 hover:text-red-600 shadow-sm border border-slate-100"
-                    >
-                      <X size={14} />
-                    </button>
+                  <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                    {idx + 1}
                   </div>
                 </div>
               ))}
             </div>
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              onChange={handleFileSelect} 
-              className="hidden" 
-              accept="image/*" 
-              multiple 
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileSelect}
+              className="hidden"
+              accept="image/*"
+              multiple
             />
           </div>
 

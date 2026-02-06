@@ -270,9 +270,9 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
                     {currentProduct.title}
                   </h1>
 
-                  <p className="text-sm md:text-base text-gray-500 leading-relaxed max-w-sm mb-8 line-clamp-4">
+                  <div className="text-sm md:text-base text-gray-500 leading-relaxed max-w-sm mb-8 whitespace-pre-line">
                     {currentProduct.description}
-                  </p>
+                  </div>
                 </motion.div>
               </div>
 
