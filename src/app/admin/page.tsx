@@ -63,11 +63,18 @@ export default function AdminPage() {
 
   const handleUpdateProduct = async (
     id: string,
-    data: { title: string; description: string; imageFiles: File[] }
+    data: {
+      title: string;
+      description: string;
+      imageFiles: File[];
+      existingUrlsToKeep?: string[];
+    }
   ) => {
     const formData = new FormData();
     formData.set('title', data.title);
     formData.set('description', data.description);
+    if (data.existingUrlsToKeep?.length)
+      formData.set('existingUrls', JSON.stringify(data.existingUrlsToKeep));
     data.imageFiles.forEach((f) => formData.append('images', f));
     const result = await updateProductAction(Number(id), formData);
     if (!result.success) throw new Error(result.error);
@@ -87,7 +94,7 @@ export default function AdminPage() {
       localStorage.setItem(ADMIN_AUTHORIZED_KEY, 'true');
       setIsAuthorized(true);
     } else {
-      alert('密码错误');
+      alert('Wrong password');
     }
   };
 
@@ -100,24 +107,24 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
         <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-slate-200 p-10">
-          <h1 className="text-2xl font-bold text-center text-slate-800 mb-6">管理后台</h1>
+          <h1 className="text-2xl font-bold text-center text-slate-800 mb-6">Sign In</h1>
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-slate-500 mb-1">访问密码</label>
+              <label className="block text-sm font-medium text-slate-500 mb-1">Password</label>
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none text-slate-800"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none text-slate-800"
                 placeholder="Password"
                 required
               />
             </div>
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors"
+              className="w-full py-3.5 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-semibold transition-colors"
             >
-              登录
+              Sign In
             </button>
           </form>
         </div>
@@ -129,12 +136,12 @@ export default function AdminPage() {
     <div className="flex h-screen w-full bg-slate-50 text-slate-900 overflow-hidden">
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/50 lg:hidden backdrop-blur-sm"
+          className="fixed inset-0 z-20 bg-black/50 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
           onKeyDown={(e) => e.key === 'Escape' && setIsSidebarOpen(false)}
           role="button"
           tabIndex={0}
-          aria-label="关闭"
+          aria-label="Close"
         />
       )}
 
@@ -147,7 +154,7 @@ export default function AdminPage() {
         `}
       >
         <div className="h-16 flex items-center px-6 border-b border-slate-100">
-          <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-slate-900/30">
+          <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-primary-500/30">
             <LayoutDashboard className="text-white w-5 h-5" />
           </div>
           <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">

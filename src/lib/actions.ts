@@ -80,15 +80,17 @@ export async function updateProductAction(id: number, formData: FormData): Promi
         if (title != null && title.trim()) updates.title = title.trim();
         if (description != null && description.trim()) updates.description = description.trim();
 
-        if (imageFiles.length > 0) {
-            const imageUrls: string[] = [];
-            for (const file of imageFiles) {
-                if (file.size > MAX_SIZE) return { success: false, error: `图片 ${file.name} 超过 3MB 限制` };
-                const blob = await put(`product/${Date.now()}-${file.name}`, file, { access: 'public' });
-                imageUrls.push(blob.url);
-            }
-            updates.images = imageUrls;
+        const existingUrlsRaw = formData.get('existingUrls');
+        const existingUrls: string[] = existingUrlsRaw
+            ? (JSON.parse(existingUrlsRaw as string) as string[])
+            : [];
+        const imageUrls: string[] = [...existingUrls];
+        for (const file of imageFiles) {
+            if (file.size > MAX_SIZE) return { success: false, error: `图片 ${file.name} 超过 3MB 限制` };
+            const blob = await put(`product/${Date.now()}-${file.name}`, file, { access: 'public' });
+            imageUrls.push(blob.url);
         }
+        if (imageUrls.length > 0) updates.images = imageUrls;
 
         if (Object.keys(updates).length === 0) return { success: false, error: '无修改内容' };
         const result = await updateProduct(id, updates);

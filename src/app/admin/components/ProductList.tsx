@@ -24,7 +24,7 @@ export function ProductList({ products, onEdit, onDelete, onAddNew }: ProductLis
 
   return (
     <>
-      <div className="animate-in fade-in duration-300">
+      <div className="animate-fade-in">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Products</h1>
@@ -33,7 +33,7 @@ export function ProductList({ products, onEdit, onDelete, onAddNew }: ProductLis
           <button
             type="button"
             onClick={onAddNew}
-            className="inline-flex items-center justify-center px-4 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 active:scale-95"
+            className="inline-flex items-center justify-center px-4 py-2.5 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-primary-600 transition-colors shadow-lg shadow-slate-900/20 active:scale-95"
           >
             <Plus size={18} className="mr-2" />
             Add Product
@@ -48,7 +48,7 @@ export function ProductList({ products, onEdit, onDelete, onAddNew }: ProductLis
               placeholder="Search products..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-slate-900/20 focus:border-slate-900 transition-all"
+              className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-all"
             />
           </div>
           <div className="hidden sm:block text-sm text-slate-500 font-medium">
@@ -97,11 +97,11 @@ export function ProductList({ products, onEdit, onDelete, onAddNew }: ProductLis
                         <span className="text-sm text-slate-500">{formatDate(product.createdAt)}</span>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end space-x-2">
                           <button
                             type="button"
                             onClick={() => onEdit(product)}
-                            className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                            className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
                             title="Edit"
                           >
                             <Edit3 size={18} />
@@ -128,14 +128,14 @@ export function ProductList({ products, onEdit, onDelete, onAddNew }: ProductLis
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
             onClick={() => setDeleteId(null)}
             onKeyDown={(e) => e.key === 'Escape' && setDeleteId(null)}
             role="button"
             tabIndex={0}
             aria-label="Close"
           />
-          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-in zoom-in-95 duration-200">
+          <div className="relative bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 animate-scale-up">
             <div className="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center mb-4">
               <AlertTriangle size={24} />
             </div>

@@ -10,26 +10,34 @@ const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 interface ProductFormProps {
   mode: 'create' | 'edit';
   initialData?: AdminProduct;
-  onSubmit: (data: { title: string; description: string; imageFiles: File[] }) => Promise<void>;
+  onSubmit: (data: {
+    title: string;
+    description: string;
+    imageFiles: File[];
+    existingUrlsToKeep?: string[];
+  }) => Promise<void>;
   onCancel: () => void;
 }
 
 export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFormProps) {
   const [title, setTitle] = useState(initialData?.title ?? '');
   const [description, setDescription] = useState(initialData?.description ?? '');
-  const [existingUrls] = useState<string[]>(initialData?.images ?? []);
+  const initialExisting = initialData?.images ?? [];
+  const [removedExistingIndices, setRemovedExistingIndices] = useState<Set<number>>(new Set());
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const keptExisting = initialExisting.filter((_, i) => !removedExistingIndices.has(i));
   const newPreviews = newFiles.map((f) => ({ file: f, url: URL.createObjectURL(f) }));
+  const totalImages = keptExisting.length + newFiles.length;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     setError(null);
     const files = Array.from(e.target.files);
-    const total = existingUrls.length + newFiles.length + files.length;
+    const total = keptExisting.length + newFiles.length + files.length;
     if (total > MAX_IMAGES) {
       setError(`You can only upload a maximum of ${MAX_IMAGES} images.`);
       return;
@@ -49,13 +57,18 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
     setNewFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const removeExisting = (index: number) => {
+    const idx = initialExisting.indexOf(keptExisting[index]);
+    if (idx >= 0) setRemovedExistingIndices((prev) => new Set(prev).add(idx));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
       setError('Product title is required.');
       return;
     }
-    const hasImages = mode === 'create' ? newFiles.length > 0 : existingUrls.length > 0 || newFiles.length > 0;
+    const hasImages = mode === 'create' ? newFiles.length > 0 : keptExisting.length > 0 || newFiles.length > 0;
     if (!hasImages) {
       setError('At least one product image is required.');
       return;
@@ -64,7 +77,12 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
     setIsSubmitting(true);
     setError(null);
     try {
-      await onSubmit({ title: title.trim(), description: description.trim(), imageFiles: newFiles });
+      await onSubmit({
+        title: title.trim(),
+        description: description.trim(),
+        imageFiles: newFiles,
+        existingUrlsToKeep: mode === 'edit' ? keptExisting : undefined,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save.');
     } finally {
@@ -73,7 +91,7 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-300">
+    <div className="animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
         <button
           type="button"
@@ -96,33 +114,44 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
             <div className="flex items-center justify-between">
               <label className="block text-sm font-semibold text-slate-900">Product Images</label>
               <span className="text-xs text-slate-500">
-                {existingUrls.length + newFiles.length} / {MAX_IMAGES} uploaded
+                {totalImages} / {MAX_IMAGES} uploaded
               </span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {existingUrls.length + newFiles.length < MAX_IMAGES && (
+              {totalImages < MAX_IMAGES && (
                 <div
                   role="button"
                   tabIndex={0}
                   onClick={() => fileInputRef.current?.click()}
                   onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
-                  className="aspect-square rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer flex flex-col items-center justify-center group"
+                  className="aspect-square rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-primary-400 transition-all cursor-pointer flex flex-col items-center justify-center group"
                 >
                   <div className="p-3 bg-white rounded-full shadow-sm mb-2 group-hover:scale-110 group-hover:shadow-md transition-all duration-200">
-                    <Upload size={20} className="text-slate-400 group-hover:text-slate-900" />
+                    <Upload size={20} className="text-slate-400 group-hover:text-primary-600" />
                   </div>
-                  <span className="text-xs font-medium text-slate-500 group-hover:text-slate-900">Upload</span>
+                  <span className="text-xs font-medium text-slate-500 group-hover:text-primary-600">Upload</span>
                 </div>
               )}
-              {existingUrls.map((url, idx) => (
-                <div key={`e-${idx}`} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm">
+              {keptExisting.map((url, idx) => (
+                <div key={`e-${url}-${idx}`} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm">
                   <img src={url} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-all duration-200" />
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity scale-90 group-hover:scale-100 duration-200">
+                    <button
+                      type="button"
+                      onClick={() => removeExisting(idx)}
+                      className="p-1.5 bg-white text-slate-700 rounded-lg hover:bg-red-50 hover:text-red-600 shadow-sm border border-slate-100"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
                 </div>
               ))}
               {newPreviews.map(({ file, url }, idx) => (
                 <div key={`n-${idx}`} className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm">
                   <img src={url} alt="" className="w-full h-full object-cover" />
-                  <div className="absolute top-2 right-2">
+                  <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-all duration-200" />
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity scale-90 group-hover:scale-100 duration-200">
                     <button
                       type="button"
                       onClick={() => removeNewFile(idx)}
@@ -157,7 +186,7 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g. Modern Leather Sofa"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/10 transition-all outline-none text-slate-900 placeholder:text-slate-400 font-medium"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none text-slate-900 placeholder:text-slate-400 font-medium"
               />
             </div>
             <div>
@@ -166,22 +195,22 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
               </label>
               <textarea
                 id="description"
-                rows={6}
+                rows={8}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Describe the product features, materials, and dimensions..."
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/10 transition-all outline-none text-slate-900 placeholder:text-slate-400 resize-none leading-relaxed"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none text-slate-900 placeholder:text-slate-400 resize-none leading-relaxed"
               />
             </div>
           </div>
 
           {error && (
-            <div className="p-4 bg-red-50 text-red-600 text-sm rounded-xl flex items-center border border-red-100">
+            <div className="p-4 bg-red-50 text-red-600 text-sm rounded-xl flex items-center animate-shake border border-red-100">
               <span className="mr-2">⚠️</span> {error}
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-4 pt-6 border-t border-slate-100">
+          <div className="flex items-center justify-end space-x-4 pt-6 border-t border-slate-100">
             <button
               type="button"
               onClick={onCancel}
