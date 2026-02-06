@@ -24,9 +24,9 @@ async function getRedis(): Promise<RedisClientType | null> {
     if (_redis?.isOpen) return _redis;
     if (_redisConnectPromise) return _redisConnectPromise;
 
-    _redisConnectPromise = (async () => {
+    _redisConnectPromise = (async (): Promise<RedisClientType | null> => {
         try {
-            const redis = await createClient({ url }).connect();
+            const redis = await createClient({ url }).connect() as RedisClientType;
             redis.on('error', (err) => console.error('Redis Client Error', err));
             _redis = redis;
             return redis;
