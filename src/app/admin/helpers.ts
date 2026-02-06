@@ -12,9 +12,9 @@ export function toAdminProduct(p: Product): { id: string; title: string; descrip
 }
 
 export function formatDate(timestamp: number): string {
-  return new Intl.DateTimeFormat('zh-CN', {
-    year: 'numeric',
+  return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
+    year: 'numeric',
   }).format(new Date(timestamp));
 }

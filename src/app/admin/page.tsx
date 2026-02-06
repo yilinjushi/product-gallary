@@ -147,7 +147,7 @@ export default function AdminPage() {
         `}
       >
         <div className="h-16 flex items-center px-6 border-b border-slate-100">
-          <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-indigo-500/30">
+          <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center mr-3 shadow-lg shadow-slate-900/30">
             <LayoutDashboard className="text-white w-5 h-5" />
           </div>
           <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
@@ -164,11 +164,11 @@ export default function AdminPage() {
 
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-2">
-            库存
+            Inventory
           </div>
           <SidebarItem
             icon={<Package size={20} />}
-            label="产品列表"
+            label="Product List"
             isActive={viewState.type === 'list'}
             onClick={() => {
               setViewState({ type: 'list' });
@@ -177,7 +177,7 @@ export default function AdminPage() {
           />
           <SidebarItem
             icon={<PackagePlus size={20} />}
-            label="添加产品"
+            label="Add Product"
             isActive={viewState.type === 'create'}
             onClick={() => {
               setViewState({ type: 'create' });
@@ -193,7 +193,7 @@ export default function AdminPage() {
             className="flex items-center w-full px-4 py-3 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 transition-colors group"
           >
             <LogOut size={18} className="mr-3 text-slate-400 group-hover:text-red-500 transition-colors" />
-            <span className="group-hover:text-slate-900">退出登录</span>
+            <span className="group-hover:text-slate-900">Sign Out</span>
           </button>
         </div>
       </aside>
@@ -208,7 +208,7 @@ export default function AdminPage() {
             <Menu size={24} />
           </button>
           <span className="font-semibold text-slate-800">
-            {viewState.type === 'create' ? '添加产品' : viewState.type === 'edit' ? '编辑产品' : '产品列表'}
+            {viewState.type === 'create' ? 'New Product' : viewState.type === 'edit' ? 'Edit Product' : 'Inventory'}
           </span>
           <div className="w-8" />
         </header>
@@ -217,7 +217,7 @@ export default function AdminPage() {
           <div className="max-w-5xl mx-auto">
             {loading ? (
               <div className="flex items-center justify-center py-20">
-                <div className="text-slate-400">加载中...</div>
+                <div className="text-slate-400">Loading...</div>
               </div>
             ) : (
               <>

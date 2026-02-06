@@ -31,12 +31,12 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
     const files = Array.from(e.target.files);
     const total = existingUrls.length + newFiles.length + files.length;
     if (total > MAX_IMAGES) {
-      setError(`最多上传 ${MAX_IMAGES} 张图片。`);
+      setError(`You can only upload a maximum of ${MAX_IMAGES} images.`);
       return;
     }
     const valid = files.filter((f) => {
       if (f.size > MAX_FILE_SIZE) {
-        setError(`文件 ${f.name} 超过 3MB`);
+        setError(`File ${f.name} exceeds 3MB.`);
         return false;
       }
       return true;
@@ -52,12 +52,12 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) {
-      setError('请填写产品标题');
+      setError('Product title is required.');
       return;
     }
     const hasImages = mode === 'create' ? newFiles.length > 0 : existingUrls.length > 0 || newFiles.length > 0;
     if (!hasImages) {
-      setError('请至少上传一张产品图片');
+      setError('At least one product image is required.');
       return;
     }
 
@@ -66,7 +66,7 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
     try {
       await onSubmit({ title: title.trim(), description: description.trim(), imageFiles: newFiles });
     } catch (err) {
-      setError(err instanceof Error ? err.message : '保存失败');
+      setError(err instanceof Error ? err.message : 'Failed to save.');
     } finally {
       setIsSubmitting(false);
     }
@@ -83,10 +83,10 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
           <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center mr-2 group-hover:border-slate-300 transition-colors shadow-sm">
             <ChevronLeft size={16} />
           </div>
-          返回列表
+          Back to list
         </button>
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-          {mode === 'create' ? '添加产品' : '编辑产品'}
+          {mode === 'create' ? 'Add New Product' : 'Edit Product'}
         </h1>
       </div>
 
@@ -94,9 +94,9 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
         <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <label className="block text-sm font-semibold text-slate-900">产品图片</label>
+              <label className="block text-sm font-semibold text-slate-900">Product Images</label>
               <span className="text-xs text-slate-500">
-                {existingUrls.length + newFiles.length} / {MAX_IMAGES}
+                {existingUrls.length + newFiles.length} / {MAX_IMAGES} uploaded
               </span>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -106,12 +106,12 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
                   tabIndex={0}
                   onClick={() => fileInputRef.current?.click()}
                   onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
-                  className="aspect-square rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-indigo-400 transition-all cursor-pointer flex flex-col items-center justify-center group"
+                  className="aspect-square rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-slate-400 transition-all cursor-pointer flex flex-col items-center justify-center group"
                 >
                   <div className="p-3 bg-white rounded-full shadow-sm mb-2 group-hover:scale-110 group-hover:shadow-md transition-all duration-200">
-                    <Upload size={20} className="text-slate-400 group-hover:text-indigo-600" />
+                    <Upload size={20} className="text-slate-400 group-hover:text-slate-900" />
                   </div>
-                  <span className="text-xs font-medium text-slate-500 group-hover:text-indigo-600">上传</span>
+                  <span className="text-xs font-medium text-slate-500 group-hover:text-slate-900">Upload</span>
                 </div>
               )}
               {existingUrls.map((url, idx) => (
@@ -149,28 +149,28 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
           <div className="space-y-6">
             <div>
               <label htmlFor="title" className="block text-sm font-semibold text-slate-900 mb-2">
-                产品标题
+                Product Title
               </label>
               <input
                 id="title"
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="例如：涂鸦WIFI智能气象钟"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none text-slate-900 placeholder:text-slate-400 font-medium"
+                placeholder="e.g. Modern Leather Sofa"
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/10 transition-all outline-none text-slate-900 placeholder:text-slate-400 font-medium"
               />
             </div>
             <div>
               <label htmlFor="description" className="block text-sm font-semibold text-slate-900 mb-2">
-                描述
+                Description
               </label>
               <textarea
                 id="description"
                 rows={6}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="描述产品特点、材质等..."
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none text-slate-900 placeholder:text-slate-400 resize-none leading-relaxed"
+                placeholder="Describe the product features, materials, and dimensions..."
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/10 transition-all outline-none text-slate-900 placeholder:text-slate-400 resize-none leading-relaxed"
               />
             </div>
           </div>
@@ -187,7 +187,7 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
               onClick={onCancel}
               className="px-6 py-2.5 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors border border-transparent hover:border-slate-200"
             >
-              取消
+              Cancel
             </button>
             <button
               type="submit"
@@ -197,12 +197,12 @@ export function ProductForm({ mode, initialData, onSubmit, onCancel }: ProductFo
               {isSubmitting ? (
                 <>
                   <Loader2 size={16} className="mr-2 animate-spin" />
-                  保存中...
+                  Saving...
                 </>
               ) : (
                 <>
                   <Save size={16} className="mr-2" />
-                  {mode === 'create' ? '创建产品' : '保存'}
+                  {mode === 'create' ? 'Create Product' : 'Save Changes'}
                 </>
               )}
             </button>
