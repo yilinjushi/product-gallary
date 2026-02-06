@@ -15,7 +15,6 @@ import { ProductForm } from './components/ProductForm';
 import { PublicView } from './components/PublicView';
 import { Auth } from './components/Auth';
 import { Product, ViewState, ProductFormData } from './types';
-import { generateId } from './utils/helpers';
 import { SidebarItem } from './components/SidebarItem';
 import { supabase, isConfigured } from './utils/supabaseClient';
 
@@ -48,7 +47,7 @@ const App: React.FC = () => {
             3. Enter your SUPABASE_ANON_KEY
           </div>
           <p className="text-xs text-slate-400">
-            Please check the AI response for the SQL schema required.
+            See supabase-setup.md for table schema and Storage bucket.
           </p>
         </div>
       </div>

@@ -1,20 +1,22 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# LuxeAdmin
 
-# Run and deploy your AI Studio app
+Product management dashboard: admin backend + public frontend. Uses Supabase (auth, database, storage) and Vite + React.
 
-This contains everything you need to run your app locally.
+## Run locally
 
-View your app in AI Studio: https://ai.studio/apps/drive/1eIg05h3-Udo-W3UQstgM2RTaRaNCGt2f
+**Prerequisites:** Node.js
 
-## Run Locally
+1. Install dependencies: `npm install`
+2. Add env: create `.env` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (or use `.env.local`)
+3. Run: `npm run dev`
 
-**Prerequisites:**  Node.js
+## Deploy (Vercel)
 
+1. Connect the repo to Vercel.
+2. Set environment variables: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`.
+3. Build command: `npm run build`; output: `dist`.
+4. Admin entry: `https://your-app.vercel.app/admin`
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Supabase
+
+See [supabase-setup.md](supabase-setup.md) for Storage bucket and `products` table schema.
