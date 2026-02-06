@@ -1,4 +1,31 @@
-import { kv } from '@vercel/kv';
+import { createClient, type VercelKV } from '@vercel/kv';
+
+function getKVClient(): VercelKV {
+    const url =
+        process.env.KV_REST_API_URL ??
+        process.env.GALLARY_KV_REST_API_URL ??
+        process.env.gallary_KV_REST_API_URL ??
+        process.env.GALLARY_REDIS_REST_API_URL ??
+        process.env.GALLARY_REDIS_URL ??
+        process.env.gallary_REDIS_URL;
+    const token =
+        process.env.KV_REST_API_TOKEN ??
+        process.env.GALLARY_KV_REST_API_TOKEN ??
+        process.env.gallary_KV_REST_API_TOKEN ??
+        process.env.GALLARY_REDIS_REST_API_TOKEN ??
+        process.env.GALLARY_REDIS_TOKEN ??
+        process.env.gallary_REDIS_TOKEN;
+
+    if (!url || !token) {
+        throw new Error(
+            '@vercel/kv: Missing required environment variables. ' +
+                'Need either (KV_REST_API_URL + KV_REST_API_TOKEN) or (GALLARY_KV_REST_API_URL + GALLARY_KV_REST_API_TOKEN) or (gallary_REDIS_URL + gallary_REDIS_TOKEN).'
+        );
+    }
+    return createClient({ url, token });
+}
+
+const kv = getKVClient();
 
 export interface Product {
     id: number;
