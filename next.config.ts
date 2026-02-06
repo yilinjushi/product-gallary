@@ -6,6 +6,12 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '10mb',
     },
   },
+  async redirects() {
+    return [
+      { source: '/wp-admin', destination: '/admin', permanent: false },
+      { source: '/wp-admin/', destination: '/admin', permanent: false },
+    ];
+  },
   images: {
     remotePatterns: [
       {

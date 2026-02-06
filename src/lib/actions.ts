@@ -2,7 +2,7 @@
 
 import { put } from '@vercel/blob';
 import { revalidatePath } from 'next/cache';
-import { addProduct, deleteProduct, getProducts } from './db';
+import { addProduct, deleteProduct, getProducts, type Product } from './db';
 
 export async function uploadImage(formData: FormData) {
     const file = formData.get('file') as File;
@@ -73,8 +73,13 @@ export async function deleteProductAction(id: number) {
     revalidatePath('/admin');
 }
 
-export async function fetchProductsAction() {
-    return await getProducts();
+export async function fetchProductsAction(): Promise<Product[]> {
+    try {
+        return await getProducts();
+    } catch (error) {
+        console.error('fetchProductsAction error:', error);
+        return [];
+    }
 }
 
 export async function checkPasswordAction(password: string) {
