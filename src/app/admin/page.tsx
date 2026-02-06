@@ -60,9 +60,11 @@ export default function AdminPage() {
         }
     }
 
-    function handleLogin(e: React.FormEvent) {
+    async function handleLogin(e: React.FormEvent) {
         e.preventDefault();
-        if (password === 'admin123') {
+        const { checkPasswordAction } = await import('@/lib/actions');
+        const isValid = await checkPasswordAction(password);
+        if (isValid) {
             setIsAuthorized(true);
         } else {
             alert('密码错误');

@@ -62,3 +62,7 @@ export async function deleteProductAction(id: number) {
 export async function fetchProductsAction() {
     return await getProducts();
 }
+
+export async function checkPasswordAction(password: string) {
+    return password === (process.env.ADMIN_PASSWORD || 'admin123');
+}
