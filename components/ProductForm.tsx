@@ -1,15 +1,116 @@
 import React, { useState, useRef } from 'react';
 import {
+  DndContext,
+  DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  rectSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import {
   Upload,
   X,
   ChevronLeft,
   Loader2,
   Save,
+  GripVertical,
 } from 'lucide-react';
 import { Product, ProductFormData } from '../types';
 import { supabase } from '../utils/supabaseClient';
 
-type ImageItem = { type: 'url'; url: string } | { type: 'file'; file: File };
+type ImageItem = { type: 'url'; url: string } | { type: 'file'; file: File; id: string };
+
+function getItemId(item: ImageItem): string {
+  return item.type === 'url' ? item.url : item.id;
+}
+
+function SortableImageCard({
+  item,
+  index,
+  total,
+  onRemove,
+  onMove,
+}: {
+  item: ImageItem;
+  index: number;
+  total: number;
+  onRemove: () => void;
+  onMove: (dir: -1 | 1) => void;
+}) {
+  const id = getItemId(item);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm ${isDragging ? 'z-50 opacity-90 shadow-lg' : ''}`}
+    >
+      {item.type === 'url' ? (
+        <img src={item.url} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <>
+          <img
+            src={URL.createObjectURL(item.file)}
+            alt=""
+            className="w-full h-full object-cover opacity-90"
+          />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="bg-black/50 text-white text-[10px] px-2 py-1 rounded-full">Pending</span>
+          </div>
+        </>
+      )}
+      <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-all duration-200" />
+      {/* 拖拽手柄 */}
+      <div
+        className="absolute top-2 left-2 p-1.5 bg-white/95 rounded-lg shadow border border-slate-200 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity"
+        {...attributes}
+        {...listeners}
+        title="拖动排序"
+      >
+        <GripVertical size={16} className="text-slate-500" />
+      </div>
+      {/* 前移 */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+        <button
+          type="button"
+          onClick={() => onMove(-1)}
+          disabled={index === 0}
+          className="p-3 bg-white/95 rounded-xl hover:bg-slate-50 shadow-md border border-slate-200 disabled:opacity-40 disabled:pointer-events-none pointer-events-auto"
+          title="前移"
+        >
+          <ChevronLeft size={28} strokeWidth={2} />
+        </button>
+      </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute bottom-2 right-2 p-1.5 bg-white rounded-lg hover:bg-red-50 text-slate-700 hover:text-red-600 shadow-sm border border-slate-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        title="删除"
+      >
+        <X size={14} />
+      </button>
+    </div>
+  );
+}
 
 interface ProductFormProps {
   mode: 'create' | 'edit';
@@ -43,7 +144,14 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       setError('You can only have a maximum of 10 images.');
       return;
     }
-    setImageItems((prev) => [...prev, ...files.map((file) => ({ type: 'file' as const, file }))]);
+    setImageItems((prev) => [
+      ...prev,
+      ...files.map((file) => ({
+        type: 'file' as const,
+        file,
+        id: `f-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      })),
+    ]);
     e.target.value = '';
   };
 
@@ -59,6 +167,19 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       [arr[index], arr[next]] = [arr[next], arr[index]];
       return arr;
     });
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = imageItems.findIndex((i) => getItemId(i) === active.id);
+    const newIndex = imageItems.findIndex((i) => getItemId(i) === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    setImageItems((prev) => arrayMove(prev, oldIndex, newIndex));
   };
 
   const uploadFiles = async (files: File[]): Promise<string[]> => {
@@ -139,62 +260,36 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 {imageItems.length} / 10 · 顺序即前台显示顺序，首张为默认图
               </span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {imageItems.length < 10 && (
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="aspect-square rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-primary-400 transition-all cursor-pointer flex flex-col items-center justify-center group"
-                >
-                  <div className="p-3 bg-white rounded-full shadow-sm mb-2 group-hover:scale-110 group-hover:shadow-md transition-all duration-200">
-                    <Upload size={20} className="text-slate-400 group-hover:text-primary-600" />
-                  </div>
-                  <span className="text-xs font-medium text-slate-500 group-hover:text-primary-600">Upload</span>
-                </div>
-              )}
-              {imageItems.map((item, idx) => (
-                <div
-                  key={item.type === 'url' ? item.url : `${idx}-${(item.file as File).name}`}
-                  className="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm"
-                >
-                  {item.type === 'url' ? (
-                    <img src={item.url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <>
-                      <img
-                        src={URL.createObjectURL(item.file)}
-                        alt=""
-                        className="w-full h-full object-cover opacity-90"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        <span className="bg-black/50 text-white text-[10px] px-2 py-1 rounded-full">Pending</span>
-                      </div>
-                    </>
-                  )}
-                  <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-all duration-200" />
-                  {/* 前移：居中、左箭头、放大 */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    <button
-                      type="button"
-                      onClick={() => moveImage(idx, -1)}
-                      disabled={idx === 0}
-                      className="p-3 bg-white/95 rounded-xl hover:bg-slate-50 shadow-md border border-slate-200 disabled:opacity-40 disabled:pointer-events-none pointer-events-auto"
-                      title="前移"
+            <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+              <SortableContext
+                items={imageItems.map(getItemId)}
+                strategy={rectSortingStrategy}
+              >
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {imageItems.length < 10 && (
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="aspect-square rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 hover:bg-slate-100 hover:border-primary-400 transition-all cursor-pointer flex flex-col items-center justify-center group"
                     >
-                      <ChevronLeft size={28} strokeWidth={2} />
-                    </button>
-                  </div>
-                  {/* 删除：右下角、缩小一半、边框同前移、悬停时 X 变红 */}
-                  <button
-                    type="button"
-                    onClick={() => removeImage(idx)}
-                    className="absolute bottom-2 right-2 p-1.5 bg-white rounded-lg hover:bg-red-50 text-slate-700 hover:text-red-600 shadow-sm border border-slate-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                    title="删除"
-                  >
-                    <X size={14} />
-                  </button>
+                      <div className="p-3 bg-white rounded-full shadow-sm mb-2 group-hover:scale-110 group-hover:shadow-md transition-all duration-200">
+                        <Upload size={20} className="text-slate-400 group-hover:text-primary-600" />
+                      </div>
+                      <span className="text-xs font-medium text-slate-500 group-hover:text-primary-600">Upload</span>
+                    </div>
+                  )}
+                  {imageItems.map((item, idx) => (
+                    <SortableImageCard
+                      key={getItemId(item)}
+                      item={item}
+                      index={idx}
+                      total={imageItems.length}
+                      onRemove={() => removeImage(idx)}
+                      onMove={(dir) => moveImage(idx, dir)}
+                    />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </SortableContext>
+            </DndContext>
             <input
               type="file"
               ref={fileInputRef}

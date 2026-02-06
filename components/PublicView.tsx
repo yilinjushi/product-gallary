@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, ShoppingBag, Menu, X, Info, LayoutDashboard } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag, Menu, X, FileText, LayoutDashboard } from 'lucide-react';
 import { Product } from '../types';
 
 interface PublicViewProps {
@@ -115,8 +115,8 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
                 }}
                 className="w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-sm font-medium text-gray-700"
               >
-                <Info size={16} />
-                <span>关于 (About)</span>
+                <FileText size={16} />
+                <span>关于</span>
               </button>
               
               <div className="h-px bg-gray-100 mx-4 my-1" />
@@ -129,7 +129,7 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
                 className="w-full text-left px-5 py-3 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-sm font-medium text-gray-700"
               >
                 <LayoutDashboard size={16} />
-                <span>管理 (Admin)</span>
+                <span>管理</span>
               </button>
             </motion.div>
           )}
@@ -211,108 +211,108 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
                   paginate(-1);
                 }
               }}
-              className="absolute w-full h-full md:w-3/4 md:h-3/4 flex flex-col md:flex-row items-center justify-center p-6 md:p-0 cursor-grab active:cursor-grabbing"
+              className="absolute w-full h-full md:w-3/4 md:h-3/4 flex flex-col md:flex-row items-center justify-center p-4 md:p-6 cursor-grab active:cursor-grabbing"
             >
-              
-              {/* Image Card - Clickable to cycle images */}
-              <div 
-                className="w-full md:w-1/2 h-[50vh] md:h-full bg-gray-100 relative overflow-hidden shadow-2xl shadow-gray-200/50 md:rounded-sm cursor-pointer"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  cycleImage();
-                }}
-              >
-                {currentImage ? (
-                  <motion.img 
-                    key={`${currentProduct.id}-${activeImageIndex}`}
-                    initial={{ opacity: 0.8 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    src={currentImage} 
-                    alt={currentProduct.title}
-                    className="w-full h-full object-cover pointer-events-none"
-                    draggable={false}
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-300">
-                    <ShoppingBag size={48} />
-                  </div>
-                )}
-                
-                {/* Image Indicator Dots (only if multiple) */}
-                {currentProduct.images.length > 1 && (
-                  <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-1.5 z-10">
-                    {currentProduct.images.map((_, idx) => (
-                      <div 
-                        key={idx} 
-                        className={`h-1 rounded-full transition-all ${idx === activeImageIndex % currentProduct.images.length ? 'w-4 bg-white shadow-sm' : 'w-1 bg-white/50'}`} 
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Text Content */}
-              <div className="w-full md:w-1/2 md:pl-16 mt-8 md:mt-0 flex flex-col items-start text-left z-10 bg-white/50 backdrop-blur-sm md:bg-transparent p-4 md:p-0 rounded-2xl md:rounded-none">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
+              {/* 产品卡片：边框 + 阴影，统一包住图片与文案 */}
+              <div className="w-full max-w-4xl bg-white rounded-2xl border border-gray-200 shadow-xl shadow-gray-200/60 overflow-hidden flex flex-col md:flex-row md:min-h-0 flex-1 md:flex-initial md:max-h-full">
+                {/* 图片区 - 点击切换多图 */}
+                <div
+                  className="w-full md:w-1/2 aspect-[4/3] md:aspect-auto md:min-h-[320px] bg-gray-100 relative overflow-hidden cursor-pointer flex-shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    cycleImage();
+                  }}
                 >
-                  <div className="flex items-center space-x-3 mb-4">
-                     <span className="h-px w-8 bg-black"></span>
-                     <span className="text-xs font-semibold tracking-widest uppercase text-gray-500">
-                       {currentProduct.tag || 'New Arrival'}
-                     </span>
-                  </div>
+                  {currentImage ? (
+                    <motion.img
+                      key={`${currentProduct.id}-${activeImageIndex}`}
+                      initial={{ opacity: 0.8 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                      src={currentImage}
+                      alt={currentProduct.title}
+                      className="w-full h-full object-cover pointer-events-none"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                      <ShoppingBag size={48} />
+                    </div>
+                  )}
+                  {currentProduct.images.length > 1 && (
+                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">
+                      {currentProduct.images.map((_, idx) => (
+                        <div
+                          key={idx}
+                          className={`rounded-full transition-all ${idx === activeImageIndex % currentProduct.images.length ? 'w-5 h-1.5 md:w-6 md:h-1.5 bg-gray-900' : 'w-1.5 h-1.5 md:w-2 md:h-2 bg-white/80'}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-                  <h1 className="text-3xl md:text-5xl font-light leading-tight mb-6 text-gray-900">
-                    {currentProduct.title}
-                  </h1>
-
-                  <div className="text-sm md:text-base text-gray-500 leading-relaxed max-w-sm mb-8 whitespace-pre-line">
-                    {currentProduct.description}
-                  </div>
-                </motion.div>
+                {/* 文案区 */}
+                <div className="w-full md:w-1/2 flex flex-col justify-center p-5 md:p-8 md:pl-10 text-left">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                  >
+                    <div className="flex items-center space-x-3 mb-3">
+                      <span className="h-px w-8 bg-gray-900" />
+                      <span className="text-xs font-semibold tracking-widest uppercase text-gray-500">
+                        {currentProduct.tag || 'New Arrival'}
+                      </span>
+                    </div>
+                    <h1 className="text-2xl md:text-4xl font-light leading-tight mb-4 text-gray-900">
+                      {currentProduct.title}
+                    </h1>
+                    <div className="text-sm md:text-base text-gray-500 leading-relaxed max-w-md whitespace-pre-line">
+                      {currentProduct.description}
+                    </div>
+                  </motion.div>
+                </div>
               </div>
 
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Navigation Controls (Bottom) */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-between items-end px-8 pointer-events-none">
-           {/* Pagination Dots (Products) */}
-           <div className="flex space-x-2 pointer-events-auto">
-             {products.map((_, idx) => (
-               <button
-                 key={idx}
-                 onClick={() => {
-                    const diff = idx - productIndex;
-                    if (diff !== 0) paginate(diff);
-                 }}
-                 className={`transition-all duration-300 rounded-full ${
-                   idx === productIndex ? 'w-8 h-1 bg-black' : 'w-1 h-1 bg-gray-300 hover:bg-gray-400'
-                 }`}
-               />
-             ))}
-           </div>
-
-           {/* Manual Arrows (Desktop mainly) */}
-           <div className="hidden md:flex space-x-4 pointer-events-auto">
-             <button 
-                onClick={() => paginate(-1)}
-                className="p-3 border border-gray-100 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-colors"
-             >
-               <ChevronLeft size={20} className="text-gray-600" />
-             </button>
-             <button 
-                onClick={() => paginate(1)}
-                className="p-3 border border-gray-100 rounded-full hover:bg-gray-50 hover:border-gray-300 transition-colors"
-             >
-               <ChevronRight size={20} className="text-gray-600" />
-             </button>
-           </div>
+        {/* 底部导航：手机端加大圆点、提高对比度并留出安全区，保证可见可点 */}
+        <div className="absolute bottom-4 md:bottom-8 left-0 right-0 flex justify-between items-center px-4 md:px-8 pb-[env(safe-area-inset-bottom)] z-20 pointer-events-none">
+          <div className="flex items-center gap-2 md:gap-3 py-2 px-3 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200/80 shadow-sm pointer-events-auto">
+            {products.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => {
+                  const diff = idx - productIndex;
+                  if (diff !== 0) paginate(diff);
+                }}
+                className={`transition-all duration-300 rounded-full flex-shrink-0 ${
+                  idx === productIndex ? 'w-6 h-2 md:w-8 md:h-1.5 bg-gray-900' : 'w-2 h-2 md:w-2 md:h-2 bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`查看第 ${idx + 1} 个产品`}
+              />
+            ))}
+          </div>
+          <div className="flex items-center gap-1 md:gap-2 pointer-events-auto">
+            <button
+              onClick={() => paginate(-1)}
+              disabled={productIndex === 0}
+              className="p-2.5 md:p-3 rounded-full border border-gray-200 bg-white/90 backdrop-blur-sm shadow-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="上一个产品"
+            >
+              <ChevronLeft size={22} className="text-gray-600 md:w-5 md:h-5" />
+            </button>
+            <button
+              onClick={() => paginate(1)}
+              disabled={productIndex === products.length - 1}
+              className="p-2.5 md:p-3 rounded-full border border-gray-200 bg-white/90 backdrop-blur-sm shadow-sm hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              aria-label="下一个产品"
+            >
+              <ChevronRight size={22} className="text-gray-600 md:w-5 md:h-5" />
+            </button>
+          </div>
         </div>
 
       </div>
