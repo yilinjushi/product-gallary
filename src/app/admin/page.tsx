@@ -39,7 +39,11 @@ export default function AdminPage() {
         });
 
         try {
-            await createProductAction(formData);
+            const result = await createProductAction(formData);
+            if (!result.success) {
+                alert(result.error);
+                return;
+            }
             (e.target as HTMLFormElement).reset();
             setSelectedFiles([]);
             loadProducts();

@@ -19,38 +19,52 @@ export async function uploadImage(formData: FormData) {
     }
 }
 
-export async function createProductAction(formData: FormData) {
-    const title = formData.get('title') as string;
-    const description = formData.get('description') as string;
-    const imageFiles = formData.getAll('images') as File[];
+export type CreateProductResult = { success: true } | { success: false; error: string };
 
-    if (!title || !description || imageFiles.length === 0) {
-        throw new Error('缺少必填项或未选择图片');
-    }
+export async function createProductAction(formData: FormData): Promise<CreateProductResult> {
+    try {
+        const title = formData.get('title') as string;
+        const description = formData.get('description') as string;
+        const imageFiles = formData.getAll('images') as File[];
 
-    const MAX_SIZE = 3 * 1024 * 1024; // 3MB
-
-    const imageUrls: string[] = [];
-
-    for (const file of imageFiles) {
-        if (file.size > MAX_SIZE) {
-            throw new Error(`图片 ${file.name} 超过 3MB 限制`);
+        if (!title || !description || imageFiles.length === 0) {
+            return { success: false, error: '缺少必填项或未选择图片' };
         }
 
-        const blob = await put(`product/${Date.now()}-${file.name}`, file, {
-            access: 'public'
+        const MAX_SIZE = 3 * 1024 * 1024; // 3MB
+
+        const imageUrls: string[] = [];
+
+        for (const file of imageFiles) {
+            if (file.size > MAX_SIZE) {
+                return { success: false, error: `图片 ${file.name} 超过 3MB 限制` };
+            }
+
+            const blob = await put(`product/${Date.now()}-${file.name}`, file, {
+                access: 'public'
+            });
+            imageUrls.push(blob.url);
+        }
+
+        const result = await addProduct({
+            title,
+            description,
+            images: imageUrls,
         });
-        imageUrls.push(blob.url);
+
+        if (!result.success) {
+            const msg = result.error instanceof Error ? result.error.message : '数据库写入失败';
+            return { success: false, error: msg };
+        }
+
+        revalidatePath('/');
+        revalidatePath('/admin');
+        return { success: true };
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('createProductAction error:', error);
+        return { success: false, error: message };
     }
-
-    await addProduct({
-        title,
-        description,
-        images: imageUrls,
-    });
-
-    revalidatePath('/');
-    revalidatePath('/admin');
 }
 
 export async function deleteProductAction(id: number) {
