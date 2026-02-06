@@ -25,7 +25,11 @@ function getKVClient(): VercelKV {
     return createClient({ url, token });
 }
 
-const kv = getKVClient();
+let _kv: VercelKV | null = null;
+function kv(): VercelKV {
+    if (!_kv) _kv = getKVClient();
+    return _kv;
+}
 
 export interface Product {
     id: number;
@@ -40,7 +44,7 @@ const KV_KEY = 'products';
 export async function getProducts(): Promise<Product[]> {
     try {
         await initDb(); // Ensure table exists
-        const products = await kv.get<Product[]>(KV_KEY);
+        const products = await kv().get<Product[]>(KV_KEY);
         return products || [];
     } catch (error) {
         console.error('Failed to fetch products:', error);
@@ -60,7 +64,7 @@ export async function addProduct(product: Omit<Product, 'id'>) {
         };
 
         products.unshift(newProduct); // Add to beginning (DESC order)
-        await kv.set(KV_KEY, products);
+        await kv().set(KV_KEY, products);
         return { success: true };
     } catch (error) {
         console.error('Failed to add product:', error);
@@ -72,7 +76,7 @@ export async function deleteProduct(id: number) {
     try {
         const products = await getProducts();
         const updatedProducts = products.filter(p => p.id !== id);
-        await kv.set(KV_KEY, updatedProducts);
+        await kv().set(KV_KEY, updatedProducts);
         return { success: true };
     } catch (error) {
         console.error('Failed to delete product:', error);
@@ -82,7 +86,7 @@ export async function deleteProduct(id: number) {
 
 export async function initDb() {
     try {
-        const exists = await kv.exists(KV_KEY);
+        const exists = await kv().exists(KV_KEY);
         if (!exists) {
             console.log('Seeding initial products to KV...');
             const { products: initialProducts } = await import('@/data/products');
@@ -94,7 +98,7 @@ export async function initDb() {
                 created_at: new Date().toISOString(),
             }));
 
-            await kv.set(KV_KEY, seededProducts);
+            await kv().set(KV_KEY, seededProducts);
         }
     } catch (error) {
         console.error('Failed to initialize KV database:', error);
