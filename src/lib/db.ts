@@ -85,6 +85,27 @@ export async function addProduct(product: Omit<Product, 'id'>) {
     }
 }
 
+export async function updateProduct(id: number, data: { title?: string; description?: string; images?: string[] }) {
+    const client = await getRedis();
+    if (!client) return { success: false, error: new Error(KV_NOT_CONFIGURED_MESSAGE) };
+    try {
+        const products = await getProducts();
+        const index = products.findIndex((p) => p.id === id);
+        if (index === -1) return { success: false, error: new Error('产品不存在') };
+        products[index] = {
+            ...products[index],
+            ...(data.title != null && { title: data.title }),
+            ...(data.description != null && { description: data.description }),
+            ...(data.images != null && data.images.length > 0 && { images: data.images }),
+        };
+        await client.set(KV_KEY, JSON.stringify(products));
+        return { success: true };
+    } catch (error) {
+        console.error('Failed to update product:', error);
+        return { success: false, error };
+    }
+}
+
 export async function deleteProduct(id: number) {
     const client = await getRedis();
     if (!client) return { success: false, error: new Error(KV_NOT_CONFIGURED_MESSAGE) };
