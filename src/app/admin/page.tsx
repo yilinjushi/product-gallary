@@ -5,6 +5,8 @@ import { createProductAction, deleteProductAction, fetchProductsAction } from '@
 import { Product } from '@/lib/db';
 import Image from 'next/image';
 
+const ADMIN_AUTHORIZED_KEY = 'admin_authorized';
+
 export default function AdminPage() {
     const [view, setView] = useState<'add' | 'products'>('add');
     const [products, setProducts] = useState<Product[]>([]);
@@ -13,6 +15,12 @@ export default function AdminPage() {
     const [password, setPassword] = useState('');
     const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined' && localStorage.getItem(ADMIN_AUTHORIZED_KEY) === 'true') {
+            setIsAuthorized(true);
+        }
+    }, []);
 
     useEffect(() => {
         if (isAuthorized) loadProducts();
@@ -62,8 +70,17 @@ export default function AdminPage() {
         e.preventDefault();
         const { checkPasswordAction } = await import('@/lib/actions');
         const isValid = await checkPasswordAction(password);
-        if (isValid) setIsAuthorized(true);
-        else alert('密码错误');
+        if (isValid) {
+            localStorage.setItem(ADMIN_AUTHORIZED_KEY, 'true');
+            setIsAuthorized(true);
+        } else {
+            alert('密码错误');
+        }
+    }
+
+    function handleLogout() {
+        localStorage.removeItem(ADMIN_AUTHORIZED_KEY);
+        setIsAuthorized(false);
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,7 +173,8 @@ export default function AdminPage() {
                 </nav>
                 <div className="mt-auto">
                     <button
-                        onClick={() => setIsAuthorized(false)}
+                        onClick={handleLogout}
+                        type="button"
                         className="p-2.5 text-white/40 hover:text-red-400 transition-colors rounded-xl"
                         title="退出"
                     >
