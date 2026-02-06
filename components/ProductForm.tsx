@@ -3,8 +3,6 @@ import {
   Upload,
   X,
   ChevronLeft,
-  ChevronUp,
-  ChevronDown,
   Loader2,
   Save,
 } from 'lucide-react';
@@ -173,41 +171,27 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                     </>
                   )}
                   <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/20 transition-all duration-200" />
-                  {/* 前移/后移：居中并排、图标加大 */}
-                  <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                    <div className="flex items-center gap-2 pointer-events-auto">
-                      <button
-                        type="button"
-                        onClick={() => moveImage(idx, -1)}
-                        disabled={idx === 0}
-                        className="p-2.5 bg-white/95 rounded-xl hover:bg-slate-50 shadow-md border border-slate-200 disabled:opacity-40 disabled:pointer-events-none"
-                        title="前移"
-                      >
-                        <ChevronUp size={22} strokeWidth={2} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => moveImage(idx, 1)}
-                        disabled={idx === imageItems.length - 1}
-                        className="p-2.5 bg-white/95 rounded-xl hover:bg-slate-50 shadow-md border border-slate-200 disabled:opacity-40 disabled:pointer-events-none"
-                        title="后移"
-                      >
-                        <ChevronDown size={22} strokeWidth={2} />
-                      </button>
-                    </div>
+                  {/* 前移：居中、左箭头、放大 */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    <button
+                      type="button"
+                      onClick={() => moveImage(idx, -1)}
+                      disabled={idx === 0}
+                      className="p-3 bg-white/95 rounded-xl hover:bg-slate-50 shadow-md border border-slate-200 disabled:opacity-40 disabled:pointer-events-none pointer-events-auto"
+                      title="前移"
+                    >
+                      <ChevronLeft size={28} strokeWidth={2} />
+                    </button>
                   </div>
-                  {/* 删除：右下角、红框 */}
+                  {/* 删除：右下角、缩小一半、边框同前移、悬停时 X 变红 */}
                   <button
                     type="button"
                     onClick={() => removeImage(idx)}
-                    className="absolute bottom-2 right-2 p-2 bg-white rounded-xl hover:bg-red-50 text-slate-700 hover:text-red-600 shadow-sm border-2 border-red-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                    className="absolute bottom-2 right-2 p-1.5 bg-white rounded-lg hover:bg-red-50 text-slate-700 hover:text-red-600 shadow-sm border border-slate-200 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
                     title="删除"
                   >
-                    <X size={18} />
+                    <X size={14} />
                   </button>
-                  <div className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
-                    {idx + 1}
-                  </div>
                 </div>
               ))}
             </div>
