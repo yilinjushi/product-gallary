@@ -123,9 +123,9 @@ const App: React.FC = () => {
       if (error) throw error;
       fetchProducts(); // Refresh list
       setViewState({ type: 'list' });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating product:", error);
-      alert("Failed to create product");
+      throw error;
     }
   };
 

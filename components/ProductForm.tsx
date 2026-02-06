@@ -12,7 +12,7 @@ import { supabase } from '../utils/supabaseClient';
 interface ProductFormProps {
   mode: 'create' | 'edit';
   initialData?: Product;
-  onSubmit: (data: ProductFormData) => void;
+  onSubmit: (data: ProductFormData) => void | Promise<void>;
   onCancel: () => void;
 }
 
@@ -72,18 +72,18 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       const { error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(filePath, file);
+        .upload(filePath, file, { upsert: false });
 
       if (uploadError) {
-        console.error('Error uploading file:', uploadError);
-        continue; // Skip failed uploads or handle differently
+        console.error('Storage upload error:', uploadError);
+        throw new Error(`图片上传失败: ${uploadError.message}`);
       }
 
       const { data } = supabase.storage
         .from('product-images')
         .getPublicUrl(filePath);
 
-      if (data.publicUrl) {
+      if (data?.publicUrl) {
         uploadedUrls.push(data.publicUrl);
       }
     }
@@ -103,6 +103,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
     setIsSubmitting(true);
     
+    setError(null);
     try {
       // 1. Upload pending images
       const newImageUrls = await uploadImages();
@@ -110,11 +111,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       // 2. Combine with existing images
       const finalImageList = [...images, ...newImageUrls];
 
-      // 3. Submit data
-      onSubmit({ title, description, images: finalImageList, tag: tag.trim() || undefined });
-    } catch (err) {
+      // 3. Submit data (await so we catch DB errors)
+      await onSubmit({ title, description, images: finalImageList, tag: tag.trim() || undefined });
+    } catch (err: any) {
       console.error(err);
-      setError("Failed to save product. Please try again.");
+      const msg = err?.message || err?.error_description || "Failed to save product. Please try again.";
+      setError(msg);
+    } finally {
       setIsSubmitting(false);
     }
   };
