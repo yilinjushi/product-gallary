@@ -185,3 +185,20 @@ body {
     height: 480px !important;
   }
 }
+
+/* Admin: 与前端卡片同风格的玻璃卡片 */
+.admin-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.admin-card-image {
+  background: #1e1e26;
+  position: relative;
+}
+
+.admin-card-text {
+  background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.2));
+}

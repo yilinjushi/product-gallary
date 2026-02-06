@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createProductAction, deleteProductAction, fetchProductsAction } from '@/lib/actions';
 import { Product } from '@/lib/db';
+import Image from 'next/image';
 
 export default function AdminPage() {
     const [view, setView] = useState<'add' | 'products'>('add');
@@ -14,9 +15,7 @@ export default function AdminPage() {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        if (isAuthorized) {
-            loadProducts();
-        }
+        if (isAuthorized) loadProducts();
     }, [isAuthorized]);
 
     async function loadProducts() {
@@ -30,14 +29,9 @@ export default function AdminPage() {
             alert('请选择至少一张图片');
             return;
         }
-
         setIsUploading(true);
         const formData = new FormData(e.currentTarget);
-        // Add multiple files to formData
-        selectedFiles.forEach(file => {
-            formData.append('images', file);
-        });
-
+        selectedFiles.forEach((file) => formData.append('images', file));
         try {
             const result = await createProductAction(formData);
             if (!result.success) {
@@ -68,29 +62,27 @@ export default function AdminPage() {
         e.preventDefault();
         const { checkPasswordAction } = await import('@/lib/actions');
         const isValid = await checkPasswordAction(password);
-        if (isValid) {
-            setIsAuthorized(true);
-        } else {
-            alert('密码错误');
-        }
+        if (isValid) setIsAuthorized(true);
+        else alert('密码错误');
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
-        const validFiles = files.filter(file => {
+        const validFiles = files.filter((file) => {
             if (file.size > 3 * 1024 * 1024) {
                 alert(`文件 ${file.name} 超过 3MB`);
                 return false;
             }
             return true;
         });
-        setSelectedFiles(prev => [...prev, ...validFiles]);
+        setSelectedFiles((prev) => [...prev, ...validFiles]);
     };
 
     const removeFile = (index: number) => {
-        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+        setSelectedFiles((prev) => prev.filter((_, i) => i !== index));
     };
 
+    // ——— 登录页（保持原样） ———
     if (!isAuthorized) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-4 font-sans">
@@ -129,200 +121,188 @@ export default function AdminPage() {
         );
     }
 
+    // ——— 已登录：深色背景 + 侧边栏 + 主内容（与前端卡片风格一致） ———
     return (
-        <div className="min-h-screen bg-[#f8fafc] flex font-sans">
-            {/* Sidebar */}
-            <aside className="w-[100px] bg-white border-r border-gray-100 flex flex-col items-center py-10 gap-8 shadow-sm">
-                <div className="p-3 bg-blue-50 text-blue-500 rounded-2xl mb-4">
-                    <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="min-h-screen flex font-sans bg-[var(--bg-color)] text-[var(--text-primary)]">
+            {/* 侧边栏 */}
+            <aside className="w-[80px] md:w-[100px] border-r border-white/10 flex flex-col items-center py-8 gap-6 flex-shrink-0">
+                <div className="p-2.5 rounded-2xl bg-white/5 text-[var(--accent-color)]">
+                    <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
                     </svg>
                 </div>
-
-                <nav className="flex flex-col gap-6 w-full">
+                <nav className="flex flex-col gap-4 w-full">
                     <button
                         onClick={() => setView('add')}
-                        className={`flex flex-col items-center gap-1 py-4 w-full transition-all relative ${view === 'add' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`flex flex-col items-center gap-1 py-3 w-full rounded-xl transition-all relative ${view === 'add' ? 'text-[var(--accent-color)] bg-white/5' : 'text-white/50 hover:text-white/80'}`}
                     >
-                        {view === 'add' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-full" />}
-                        <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        {view === 'add' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--accent-color)] rounded-r-full" />}
+                        <svg className="w-6 h-6 md:w-7 md:h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        <span className="text-[10px] font-bold uppercase tracking-widest mt-1">ADD</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">新增</span>
                     </button>
-
                     <button
                         onClick={() => setView('products')}
-                        className={`flex flex-col items-center gap-1 py-4 w-full transition-all relative ${view === 'products' ? 'text-blue-500' : 'text-gray-400 hover:text-gray-600'}`}
+                        className={`flex flex-col items-center gap-1 py-3 w-full rounded-xl transition-all relative ${view === 'products' ? 'text-[var(--accent-color)] bg-white/5' : 'text-white/50 hover:text-white/80'}`}
                     >
-                        {view === 'products' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-r-full" />}
-                        <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="3" />
-                            <path d="M12 5v14M5 12h14" strokeLinecap="round" strokeLinejoin="round" opacity="0.1" />
+                        {view === 'products' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-[var(--accent-color)] rounded-r-full" />}
+                        <svg className="w-6 h-6 md:w-7 md:h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                             <rect width="18" height="18" x="3" y="3" rx="4" />
+                            <circle cx="12" cy="12" r="3" />
                         </svg>
-                        <span className="text-[10px] font-bold uppercase tracking-widest mt-1">PRODUCTS</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">产品</span>
                     </button>
                 </nav>
-
                 <div className="mt-auto">
                     <button
                         onClick={() => setIsAuthorized(false)}
-                        className="p-3 text-gray-300 hover:text-red-400 transition-colors"
+                        className="p-2.5 text-white/40 hover:text-red-400 transition-colors rounded-xl"
+                        title="退出"
                     >
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
                     </button>
                 </div>
             </aside>
 
-            {/* Main Content */}
-            <main className="flex-1 overflow-y-auto p-12 lg:p-16">
-                <header className="mb-12 flex justify-between items-end">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
-                            {view === 'add' ? '新增产品' : '管理产品'}
-                        </h1>
-                        <p className="text-gray-400 font-medium">
-                            {view === 'add' ? '创建并由发布新的产品信息到画廊' : `当前共有 ${products.length} 个产品在展示`}
-                        </p>
-                    </div>
+            <main className="flex-1 overflow-y-auto p-6 md:p-10 lg:p-12">
+                <header className="mb-8 md:mb-10">
+                    <h1 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-1">
+                        {view === 'add' ? '新增产品' : '管理产品'}
+                    </h1>
+                    <p className="text-white/50 text-sm md:text-base">
+                        {view === 'add' ? '填写下方卡片并保存，即可发布到画廊' : `共 ${products.length} 个产品`}
+                    </p>
                 </header>
 
                 {view === 'add' ? (
-                    <form onSubmit={handleSubmit} className="space-y-10">
-                        <div className="flex flex-col lg:flex-row gap-8">
-                            {/* Product Details Card */}
-                            <div className="flex-1 bg-white rounded-[40px] p-10 shadow-[0_15px_50px_-15px_rgba(0,0,0,0.05)] border border-gray-50">
-                                <h2 className="text-xl font-bold text-gray-800 mb-8">产品详情</h2>
-                                <div className="space-y-8">
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-400 ml-1">产品名称</label>
-                                        <input
-                                            name="title"
-                                            type="text"
-                                            required
-                                            className="w-full px-6 py-4 rounded-2xl bg-[#fcfdfe] border border-gray-100 focus:border-blue-300 focus:ring-4 focus:ring-blue-50 outline-none transition-all text-gray-700"
-                                            placeholder="Product Title"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-bold text-gray-400 ml-1">详细描述</label>
-                                        <textarea
-                                            name="description"
-                                            required
-                                            rows={4}
-                                            className="w-full px-6 py-4 rounded-2xl bg-[#fcfdfe] border border-gray-100 focus:border-blue-300 focus:ring-4 focus:ring-blue-50 outline-none transition-all text-gray-700 resize-none"
-                                            placeholder="Multi Description"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Product Images Card */}
-                            <div className="w-full lg:w-[400px] bg-white rounded-[40px] p-10 shadow-[0_15px_50px_-15px_rgba(0,0,0,0.05)] border border-gray-50 flex flex-col">
-                                <h2 className="text-xl font-bold text-gray-800 mb-8">产品图片</h2>
-
-                                <div
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="flex-1 border-2 border-dashed border-gray-100 rounded-[30px] bg-[#fcfdfe] hover:bg-blue-50/30 hover:border-blue-200 transition-all flex flex-col items-center justify-center p-8 cursor-pointer group"
-                                >
-                                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <svg className="w-8 h-8 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </div>
-                                    <p className="text-gray-400 text-sm font-medium mb-6">Drag or Drop Prop</p>
-                                    <button type="button" className="px-8 py-3 bg-white border border-blue-500 text-blue-500 rounded-2xl font-bold text-sm shadow-md shadow-blue-50 hover:bg-blue-500 hover:text-white transition-all">
-                                        Upload Files
-                                    </button>
-                                    <input
-                                        type="file"
-                                        multiple
-                                        accept="image/*"
-                                        ref={fileInputRef}
-                                        className="hidden"
-                                        onChange={handleFileChange}
-                                    />
-                                </div>
-
-                                {/* Selected Files Preview */}
-                                {selectedFiles.length > 0 && (
-                                    <div className="mt-6 flex flex-wrap gap-2">
+                    /* ——— 新增：单张卡片表单（与前端卡片同风格） ——— */
+                    <form onSubmit={handleSubmit} className="max-w-lg mx-auto">
+                        <div className="admin-card rounded-[var(--radius)] overflow-hidden flex flex-col">
+                            {/* 第一行：上传图片 */}
+                            <div
+                                onClick={() => fileInputRef.current?.click()}
+                                className="admin-card-image flex flex-col items-center justify-center cursor-pointer hover:bg-[#252530] transition-colors min-h-[220px] md:min-h-[280px]"
+                            >
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                />
+                                {selectedFiles.length > 0 ? (
+                                    <div className="flex flex-wrap gap-2 justify-center p-4">
                                         {selectedFiles.map((file, idx) => (
-                                            <div key={idx} className="relative w-12 h-12 rounded-xl overflow-hidden border border-gray-200">
-                                                <img
-                                                    src={URL.createObjectURL(file)}
-                                                    className="w-full h-full object-cover"
-                                                    alt=""
-                                                />
+                                            <div key={idx} className="relative w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden border border-white/20">
+                                                <img src={URL.createObjectURL(file)} className="w-full h-full object-cover" alt="" />
                                                 <button
+                                                    type="button"
                                                     onClick={(e) => { e.stopPropagation(); removeFile(idx); }}
-                                                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5"
+                                                    className="absolute -top-0.5 -right-0.5 bg-red-500 text-white rounded-full p-0.5"
                                                 >
-                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path d="M6 18L18 6M6 6l12 12" />
+                                                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                                     </svg>
                                                 </button>
                                             </div>
                                         ))}
                                     </div>
+                                ) : (
+                                    <>
+                                        <svg className="w-12 h-12 md:w-14 md:h-14 text-white/40 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        <p className="text-white/50 text-sm">点击或拖拽上传图片</p>
+                                    </>
                                 )}
                             </div>
-                        </div>
 
-                        <div className="flex gap-4">
-                            <button
-                                type="submit"
-                                disabled={isUploading}
-                                className="px-10 py-5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white font-extrabold rounded-2xl shadow-2xl shadow-blue-100 transition-all transform active:scale-[0.98] min-w-[200px]"
-                            >
-                                {isUploading ? 'SAVING...' : 'Save Product'}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setView('products')}
-                                className="px-10 py-5 bg-gray-100 hover:bg-gray-200 text-gray-400 font-extrabold rounded-2xl transition-all min-w-[150px]"
-                            >
-                                Cancel
-                            </button>
+                            {/* 第二行：产品标题 */}
+                            <div className="admin-card-text px-4 md:px-6 pt-4 pb-2">
+                                <label className="block text-xs font-medium text-white/50 uppercase tracking-wider mb-2">产品标题</label>
+                                <input
+                                    name="title"
+                                    type="text"
+                                    required
+                                    placeholder="例如：涂鸦WIFI智能气象钟"
+                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-[var(--accent-color)] focus:ring-1 focus:ring-[var(--accent-color)] outline-none transition-all"
+                                />
+                            </div>
+
+                            {/* 第三行：产品描述 */}
+                            <div className="admin-card-text px-4 md:px-6 py-4">
+                                <label className="block text-xs font-medium text-white/50 uppercase tracking-wider mb-2">产品描述</label>
+                                <textarea
+                                    name="description"
+                                    required
+                                    rows={4}
+                                    placeholder="通过WIFI连接涂鸦APP，自动获取网络标准时间及当地未来天气预报数据..."
+                                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:border-[var(--accent-color)] focus:ring-1 focus:ring-[var(--accent-color)] outline-none transition-all resize-none"
+                                />
+                            </div>
+
+                            {/* 底部：保存 / 取消 */}
+                            <div className="px-4 md:px-6 pb-6 pt-2 flex gap-3">
+                                <button
+                                    type="submit"
+                                    disabled={isUploading}
+                                    className="flex-1 py-3.5 rounded-xl bg-[var(--accent-color)] hover:bg-indigo-600 disabled:opacity-50 text-white font-semibold transition-all"
+                                >
+                                    {isUploading ? '保存中...' : '保存产品'}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setView('products')}
+                                    className="px-6 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white/80 hover:bg-white/10 transition-all"
+                                >
+                                    取消
+                                </button>
+                            </div>
                         </div>
                     </form>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    /* ——— 产品列表：卡片网格，每张卡片底部删除按钮 ——— */
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl">
                         {products.length === 0 ? (
-                            <div className="col-span-full py-20 bg-white rounded-[40px] text-center border-2 border-dashed border-gray-100">
-                                <p className="text-gray-300 font-bold text-xl mb-4">暂无数据</p>
+                            <div className="col-span-full admin-card rounded-[var(--radius)] py-16 text-center">
+                                <p className="text-white/40 mb-4">暂无产品</p>
                                 <button
                                     onClick={() => setView('add')}
-                                    className="text-blue-500 font-bold hover:underline"
+                                    className="text-[var(--accent-color)] font-semibold hover:underline"
                                 >
-                                    点击此处添加您的第一个产品
+                                    添加第一个产品
                                 </button>
                             </div>
                         ) : (
                             products.map((product) => (
-                                <div key={product.id} className="bg-white rounded-[40px] p-8 shadow-[0_15px_50px_-15px_rgba(0,0,0,0.05)] border border-gray-50 flex gap-6 hover:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.08)] transition-all">
-                                    <div className="w-24 h-24 rounded-3xl overflow-hidden bg-gray-50 flex-shrink-0">
-                                        <img src={product.images[0]} className="w-full h-full object-cover" alt="" />
+                                <div key={product.id} className="admin-card rounded-[var(--radius)] overflow-hidden flex flex-col">
+                                    <div className="admin-card-image relative min-h-[180px] md:min-h-[220px] bg-[#1e1e26]">
+                                        <Image
+                                            src={product.images[0]}
+                                            alt={product.title}
+                                            fill
+                                            className="object-contain p-4"
+                                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                        />
                                     </div>
-                                    <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
-                                        <div>
-                                            <h3 className="text-xl font-bold text-gray-800 truncate mb-1">{product.title}</h3>
-                                            <p className="text-sm text-gray-400 line-clamp-2 leading-relaxed">{product.description}</p>
-                                        </div>
-                                        <div className="flex gap-4 items-center">
-                                            <span className="text-[10px] bg-blue-50 text-blue-500 font-bold px-3 py-1 rounded-full uppercase tracking-widest">
-                                                {product.images.length} Photos
-                                            </span>
-                                            <button
-                                                onClick={() => handleDelete(product.id)}
-                                                className="text-xs font-bold text-red-400 hover:text-red-500 transition-colors uppercase tracking-wider ml-auto"
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
+                                    <div className="admin-card-text px-4 md:px-5 pt-3 pb-2 flex-1">
+                                        <h3 className="font-semibold text-white text-lg mb-1 truncate" style={{ background: 'linear-gradient(to right, #fff, #a5a5a5)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                            {product.title}
+                                        </h3>
+                                        <p className="text-sm text-white/60 line-clamp-3 leading-relaxed">{product.description}</p>
+                                    </div>
+                                    <div className="px-4 md:px-5 pb-4 pt-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleDelete(product.id)}
+                                            className="w-full py-2.5 rounded-xl border border-red-500/50 text-red-400 hover:bg-red-500/10 font-medium text-sm transition-all"
+                                        >
+                                            删除产品
+                                        </button>
                                     </div>
                                 </div>
                             ))
