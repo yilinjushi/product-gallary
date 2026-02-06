@@ -24,7 +24,9 @@ const App: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [viewState, setViewState] = useState<ViewState>({ type: 'list' });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [appMode, setAppMode] = useState<'admin' | 'public'>('public');
+  const [appMode, setAppMode] = useState<'admin' | 'public'>(() =>
+    typeof window !== 'undefined' && window.location.pathname === '/admin' ? 'admin' : 'public'
+  );
   const [session, setSession] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -68,6 +70,15 @@ const App: React.FC = () => {
     fetchProducts();
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  // Sync appMode with URL (back/forward)
+  useEffect(() => {
+    const onPopState = () => {
+      setAppMode(window.location.pathname === '/admin' ? 'admin' : 'public');
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   const fetchProducts = async () => {
@@ -157,9 +168,19 @@ const App: React.FC = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setAppMode('public');
+    window.history.pushState(null, '', '/');
   };
 
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+
+  const goToAdmin = () => {
+    setAppMode('admin');
+    window.history.pushState(null, '', '/admin');
+  };
+  const goToPublic = () => {
+    setAppMode('public');
+    window.history.pushState(null, '', '/');
+  };
 
   // --- Render Logic ---
 
@@ -167,14 +188,14 @@ const App: React.FC = () => {
     return (
       <PublicView 
         products={products} 
-        onBackToAdmin={() => setAppMode('admin')} 
+        onBackToAdmin={goToAdmin} 
       />
     );
   }
 
   // If Admin Mode requested but not logged in
   if (!session) {
-    return <Auth onCancel={() => setAppMode('public')} />;
+    return <Auth onCancel={goToPublic} />;
   }
 
   // --- Render Admin View (Authenticated) ---
@@ -238,7 +259,7 @@ const App: React.FC = () => {
             label="Live Frontend" 
             isActive={false}
             onClick={() => {
-              setAppMode('public');
+              goToPublic();
               setIsSidebarOpen(false);
             }}
           />
