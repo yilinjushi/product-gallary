@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { createProductAction, deleteProductAction, fetchProductsAction, updateProductAction } from '@/lib/actions';
 import { Product } from '@/lib/db';
 import Image from 'next/image';
@@ -312,13 +311,17 @@ export default function AdminPage() {
                                         <div className="px-4 sm:px-5 pb-4 pt-2 flex gap-3">
                                             <button
                                                 type="button"
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    e.stopPropagation();
-                                                    setEditFiles([]);
-                                                    setEditingProduct({ ...product });
-                                                }}
                                                 className="flex-1 py-2.5 rounded-xl border border-white/20 text-white/90 hover:bg-white/10 font-medium text-sm transition-colors min-h-[44px]"
+                                                onClick={() => {
+                                                    const p = products.find((x) => x.id === product.id) ?? product;
+                                                    setEditFiles([]);
+                                                    setEditingProduct({
+                                                        id: p.id,
+                                                        title: p.title,
+                                                        description: p.description,
+                                                        images: [...p.images],
+                                                    });
+                                                }}
                                             >
                                                 编辑
                                             </button>
@@ -338,9 +341,15 @@ export default function AdminPage() {
                 )}
             </main>
 
-            {/* 编辑弹窗：用 Portal 挂到 body，避免被父级 overflow 或 z-index 遮挡 */}
-            {typeof document !== 'undefined' && editingProduct && createPortal(
-                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setEditingProduct(null)} role="dialog" aria-modal="true">
+            {/* 编辑弹窗：fixed 覆盖整页，保证在顶层 */}
+            {editingProduct !== null && (
+                <div
+                    key={`edit-${editingProduct.id}`}
+                    className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                    onClick={() => setEditingProduct(null)}
+                    role="dialog"
+                    aria-modal="true"
+                >
                     <div className="admin-card rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-white/10">
                             <h2 className="text-lg font-semibold text-white">编辑产品</h2>
@@ -402,8 +411,7 @@ export default function AdminPage() {
                             </div>
                         </form>
                     </div>
-                </div>,
-                document.body
+                </div>
             )}
         </div>
     );
