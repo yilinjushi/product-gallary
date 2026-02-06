@@ -23,8 +23,25 @@ export default function ProductCard({ product }: ProductCardProps) {
     return (
         <div className="product-card group">
             <div className="card-content">
-                <div className="image-container relative isolate">
-                    {/* All images stacked, only current visible */}
+                <div
+                    className="image-container relative isolate cursor-pointer"
+                    onClick={(e) => {
+                        if (product.images.length <= 1) return;
+                        e.stopPropagation();
+                        setCurrentIdx((prev) => (prev + 1) % product.images.length);
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                        if (product.images.length <= 1) return;
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            setCurrentIdx((prev) => (prev + 1) % product.images.length);
+                        }
+                    }}
+                    aria-label={product.images.length > 1 ? '点击切换下一张图片' : undefined}
+                >
+                    {/* All images stacked, fade between current and next */}
                     {product.images.map((img, idx) => (
                         <div
                             key={idx}
@@ -32,7 +49,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                         >
                             <Image
                                 src={img}
-                                alt={`${product.title} - ${idx}`}
+                                alt={`${product.title} - ${idx + 1}`}
                                 fill
                                 sizes="(max-width: 768px) 300px, 500px"
                                 className="object-contain"

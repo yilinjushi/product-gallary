@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { createProductAction, deleteProductAction, fetchProductsAction, updateProductAction } from '@/lib/actions';
 import { Product } from '@/lib/db';
 import Image from 'next/image';
@@ -237,7 +238,7 @@ export default function AdminPage() {
                                         <svg className="w-14 h-14 text-white/40 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                         </svg>
-                                        <p className="text-white/50 text-sm">点击或拖拽上传图片</p>
+                                        <p className="text-white/50 text-sm">点击或拖拽上传图片（可多选，将全部展示在前端）</p>
                                     </>
                                 )}
                             </div>
@@ -311,7 +312,12 @@ export default function AdminPage() {
                                         <div className="px-4 sm:px-5 pb-4 pt-2 flex gap-3">
                                             <button
                                                 type="button"
-                                                onClick={() => { setEditingProduct(product); setEditFiles([]); }}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    setEditFiles([]);
+                                                    setEditingProduct({ ...product });
+                                                }}
                                                 className="flex-1 py-2.5 rounded-xl border border-white/20 text-white/90 hover:bg-white/10 font-medium text-sm transition-colors min-h-[44px]"
                                             >
                                                 编辑
@@ -332,9 +338,9 @@ export default function AdminPage() {
                 )}
             </main>
 
-            {/* 编辑弹窗 */}
-            {editingProduct && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setEditingProduct(null)}>
+            {/* 编辑弹窗：用 Portal 挂到 body，避免被父级 overflow 或 z-index 遮挡 */}
+            {typeof document !== 'undefined' && editingProduct && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setEditingProduct(null)} role="dialog" aria-modal="true">
                     <div className="admin-card rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-white/10">
                             <h2 className="text-lg font-semibold text-white">编辑产品</h2>
@@ -396,7 +402,8 @@ export default function AdminPage() {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );
