@@ -59,50 +59,35 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
 
             <AnimatePresence>
               {isMenuOpen && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="absolute right-0 top-10 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-1 z-50 origin-top-right"
-                >
-                  <button
-                    onClick={() => { setShowAbout(true); setIsMenuOpen(false); }}
-                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-[15px] text-gray-700"
+                <>
+                  {/* Invisible backdrop to close menu when clicking outside */}
+                  <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="absolute right-0 top-10 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-1 z-50 origin-top-right"
                   >
-                    <Info size={18} />
-                    <span>关于</span>
-                  </button>
-                  <button
-                    onClick={() => { setShowContact(true); setIsMenuOpen(false); }}
-                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-[15px] text-gray-700"
-                  >
-                    <Mail size={18} />
-                    <span>联系</span>
-                  </button>
-                  <div className="h-px bg-gray-100 my-1" />
-                  <button
-                    onClick={() => { onBackToAdmin(); setIsMenuOpen(false); }}
-                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-[15px] text-gray-700"
-                  >
-                    <ArrowLeft size={18} />
-                    <span>后台管理</span>
-                  </button>
-                </motion.div>
+                    <button
+                      onClick={() => { setShowAbout(true); setIsMenuOpen(false); }}
+                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-[15px] text-gray-700"
+                    >
+                      <Info size={18} />
+                      <span>关于</span>
+                    </button>
+                    <button
+                      onClick={() => { setShowContact(true); setIsMenuOpen(false); }}
+                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-[15px] text-gray-700"
+                    >
+                      <Mail size={18} />
+                      <span>联系</span>
+                    </button>
+                  </motion.div>
+                </>
               )}
             </AnimatePresence>
           </div>
         </header>
-
-        {/* New Item Composer (Mock) */}
-        <div className="px-4 py-3 border-b border-gray-100/60 flex gap-4 hidden sm:flex">
-          <div className="w-12 h-12 bg-gray-900 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold">L</div>
-          <div className="flex-1 pt-2">
-            <p className="text-xl text-gray-500 font-medium">What is happening?!</p>
-            <div className="mt-4 border-t border-gray-100/60 pt-3 text-right">
-              <button className="bg-blue-400 text-white font-bold px-4 py-1.5 rounded-full font-bold opacity-50 cursor-not-allowed">Post</button>
-            </div>
-          </div>
-        </div>
 
         {/* Feed Posts */}
         <div className="flex-1 pb-20">
@@ -235,14 +220,14 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
               <img
                 src={lightboxImage}
                 alt="Zoomed product"
-                className="max-w-full max-h-full object-contain pointer-events-auto drop-shadow-2xl rounded-sm"
-                onClick={(e) => e.stopPropagation()} // Prevent click propagating to backdrop and closing
+                className="max-w-full max-h-full object-contain pointer-events-auto drop-shadow-2xl rounded-sm cursor-zoom-out"
+                onClick={() => setLightboxImage(null)}
               />
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-    </div>
+    </div >
   );
 };
