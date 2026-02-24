@@ -23,8 +23,20 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onB
     if (pid) setTargetProductId(pid);
   }, []);
 
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-10 h-10 border-4 border-gray-100 border-t-black rounded-full animate-spin" />
+          <p className="text-gray-400 text-sm font-medium">加载中...</p>
+        </div>
+      </div>
+    );
+  }
+
   // Handle empty state
-  if (!isLoading && products.length === 0) {
+  if (products.length === 0) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8">
         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6">
@@ -122,19 +134,13 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onB
 
         {/* Feed Posts */}
         <div className="flex-1 pb-20">
-          {isLoading ? (
-            <div className="flex justify-center items-center py-20">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-            </div>
-          ) : (
-            displayProducts.map(product => (
-              <Post
-                key={product.id}
-                product={product}
-                onImageClick={(img) => setLightboxImage(img)}
-              />
-            ))
-          )}
+          {displayProducts.map(product => (
+            <Post
+              key={product.id}
+              product={product}
+              onImageClick={(img) => setLightboxImage(img)}
+            />
+          ))}
         </div>
 
       </main>
