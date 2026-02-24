@@ -34,8 +34,23 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
     );
   }
 
+  const [targetProductId, setTargetProductId] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get('product');
+    if (pid) setTargetProductId(pid);
+  }, []);
+
   // Ensure newest first (in case the query wasn't perfect, or for optimistic updates)
-  const sortedProducts = [...products].sort((a, b) => b.createdAt - a.createdAt);
+  let displayProducts = [...products].sort((a, b) => b.createdAt - a.createdAt);
+
+  if (targetProductId) {
+    const target = displayProducts.find(p => p.id === targetProductId);
+    if (target) {
+      displayProducts = [target];
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white flex justify-center font-sans tracking-tight">
@@ -44,10 +59,26 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
       <main className="w-full md:max-w-2xl border-x border-gray-100/60 min-h-screen flex flex-col relative sm:shadow-[0_0_15px_rgba(0,0,0,0.02)]">
 
         {/* Sticky Header */}
-        <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100/60 py-3 px-4 flex items-center justify-between cursor-pointer">
-          <div className="flex flex-col">
-            <h1 className="text-[20px] font-bold text-gray-900 tracking-tight">先越科技</h1>
-            <p className="text-[13px] text-gray-500">核心技术驱动，助力电子产品快速落地。</p>
+        <header
+          className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100/60 py-3 px-4 flex items-center justify-between cursor-pointer"
+          onClick={() => {
+            if (targetProductId) window.location.href = window.location.pathname;
+          }}
+        >
+          <div className="flex items-center gap-3">
+            {targetProductId && (
+              <button
+                onClick={(e) => { e.stopPropagation(); window.location.href = window.location.pathname; }}
+                className="p-1.5 -ml-1 rounded-full hover:bg-gray-100 text-gray-700 transition-colors"
+                title="查看所有产品"
+              >
+                <ArrowLeft size={20} className="text-gray-900" />
+              </button>
+            )}
+            <div className="flex flex-col">
+              <h1 className="text-[20px] font-bold text-gray-900 tracking-tight">先越科技</h1>
+              <p className="text-[13px] text-gray-500">核心技术驱动，助力电子产品快速落地。</p>
+            </div>
           </div>
           <div className="relative">
             <button
@@ -91,7 +122,7 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
 
         {/* Feed Posts */}
         <div className="flex-1 pb-20">
-          {sortedProducts.map(product => (
+          {displayProducts.map(product => (
             <Post
               key={product.id}
               product={product}
