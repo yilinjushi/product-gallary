@@ -74,9 +74,7 @@ export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
         });
     };
 
-    // Generate a mock handle based on title or static brand
-    const handle = "@luxe_studio";
-    const authorName = "Luxe Studio";
+
 
     // Pseudo views formatting (e.g., 2.1K)
     const formatCount = (count: number) => {
@@ -85,33 +83,24 @@ export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
     };
 
     return (
-        <article className="px-4 py-3 border-b border-gray-100/60 bg-white hover:bg-gray-50/50 transition-colors cursor-pointer flex gap-3 sm:gap-4">
-
-            {/* Avatar Sidebar */}
-            <div className="flex-shrink-0 pt-1">
-                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-900 rounded-full flex items-center justify-center text-white font-bold shadow-sm">
-                    L
-                </div>
-            </div>
+        <article className="px-4 py-4 border-b border-gray-100/60 bg-white hover:bg-gray-50/50 transition-colors cursor-pointer flex">
 
             {/* Main Post Content */}
             <div className="flex-1 min-w-0 pb-1">
-                {/* Header: Name, Handle, Date */}
-                <div className="flex items-center gap-1.5 text-[15px] mb-0.5 whitespace-nowrap overflow-hidden">
-                    <span className="font-bold text-gray-900 truncate hover:underline">{authorName}</span>
-                    {product.tag && (
-                        <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wide flex-shrink-0">
-                            {product.tag}
-                        </span>
-                    )}
-                    <span className="text-gray-500 truncate">{handle}</span>
-                    <span className="text-gray-500">·</span>
-                    <span className="text-gray-500 hover:underline flex-shrink-0">{formatRelativeTime(product.createdAt)}</span>
-                </div>
-
+                
                 {/* Text Content */}
                 <div className="text-[15px] text-gray-900 leading-snug break-words mb-3">
-                    <p className="font-bold mb-1">{product.title}</p>
+                    <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                        <h2 className="font-bold text-[17px] tracking-tight">{product.title}</h2>
+                        {product.tag && (
+                            <span className="bg-blue-50 text-blue-600 text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wide flex-shrink-0 mt-0.5">
+                                {product.tag}
+                            </span>
+                        )}
+                        <span className="text-gray-400 text-[13px] flex-shrink-0 ml-auto mt-0.5">
+                            {formatRelativeTime(product.createdAt)}
+                        </span>
+                    </div>
                     <p className="whitespace-pre-line text-[#0f1419]">{product.description}</p>
                 </div>
 
