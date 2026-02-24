@@ -11,7 +11,7 @@ interface PublicViewProps {
 }
 
 export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onBackToAdmin }) => {
-  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [lightboxData, setLightboxData] = useState<{ images: string[], currentIndex: number } | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -138,7 +138,7 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onB
             <Post
               key={product.id}
               product={product}
-              onImageClick={(img) => setLightboxImage(img)}
+              onImageClick={(images, index) => setLightboxData({ images, currentIndex: index })}
             />
           ))}
         </div>
@@ -226,7 +226,7 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onB
 
       {/* Lightbox / Zoomed Image Overlay */}
       <AnimatePresence>
-        {lightboxImage && (
+        {lightboxData && (
           <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
 
             {/* Dark Backdrop */}
@@ -235,38 +235,45 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onB
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/90 cursor-pointer pointer-events-auto"
-              onClick={() => setLightboxImage(null)}
+              className="absolute inset-0 bg-black/95 cursor-pointer pointer-events-auto"
+              onClick={() => setLightboxData(null)}
             />
 
-            {/* Top Left Close/Back Button */}
-            <button
-              onClick={() => setLightboxImage(null)}
-              className="absolute top-4 left-4 p-2.5 text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-colors z-50 pointer-events-auto"
-            >
-              <ArrowLeft size={24} />
-            </button>
+            <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden pointer-events-none select-none p-4">
+              <AnimatePresence mode="wait">
+                <motion.img
+                  key={lightboxData.currentIndex}
+                  src={lightboxData.images[lightboxData.currentIndex]}
+                  alt="Zoomed product"
+                  className="max-w-full max-h-[85vh] object-contain shadow-2xl pointer-events-auto cursor-grab active:cursor-grabbing rounded-xl z-50"
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  dragElastic={1}
+                  onDragEnd={(_, { offset }) => {
+                    const swipe = offset.x;
+                    if (swipe < -50 && lightboxData.currentIndex < lightboxData.images.length - 1) {
+                      setLightboxData({ ...lightboxData, currentIndex: lightboxData.currentIndex + 1 });
+                    } else if (swipe > 50 && lightboxData.currentIndex > 0) {
+                      setLightboxData({ ...lightboxData, currentIndex: lightboxData.currentIndex - 1 });
+                    }
+                  }}
+                  onClick={() => setLightboxData(null)}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              </AnimatePresence>
 
-            {/* The Image itself */}
-            <motion.div
-              layoutId={`lightbox-${lightboxImage}`}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{
-                type: "spring",
-                damping: 25,
-                stiffness: 300
-              }}
-              className="relative w-full h-full max-w-[100vw] max-h-[100vh] p-4 flex items-center justify-center pointer-events-none"
-            >
-              <img
-                src={lightboxImage}
-                alt="Zoomed product"
-                className="max-w-full max-h-full object-contain pointer-events-auto drop-shadow-2xl rounded-sm cursor-zoom-out"
-                onClick={() => setLightboxImage(null)}
-              />
-            </motion.div>
+              {/* Pagination Dots */}
+              {lightboxData.images.length > 1 && (
+                <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-50 pointer-events-none">
+                  {lightboxData.images.map((_, i) => (
+                    <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === lightboxData.currentIndex ? 'bg-white' : 'bg-white/30'}`} />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
       </AnimatePresence>

@@ -6,7 +6,7 @@ import { supabase } from '../utils/supabaseClient';
 
 interface PostProps {
     product: Product;
-    onImageClick: (image: string) => void;
+    onImageClick: (images: string[], index: number) => void;
 }
 
 export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
@@ -111,7 +111,7 @@ export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
                         {product.images.length === 1 ? (
                             <div
                                 className="w-full relative aspect-[4/3] bg-gray-100 cursor-pointer overflow-hidden group"
-                                onClick={(e) => { e.stopPropagation(); onImageClick(product.images[0]); }}
+                                onClick={(e) => { e.stopPropagation(); onImageClick(product.images, 0); }}
                             >
                                 <img
                                     src={product.images[0]}
@@ -126,7 +126,7 @@ export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
                                     <div
                                         key={idx}
                                         className={`relative bg-gray-100 cursor-pointer overflow-hidden group ${product.images.length === 3 && idx === 0 ? 'row-span-2 col-span-1' : 'aspect-square'} `}
-                                        onClick={(e) => { e.stopPropagation(); onImageClick(img); }}
+                                        onClick={(e) => { e.stopPropagation(); onImageClick(product.images, idx); }}
                                     >
                                         <img
                                             src={img}
