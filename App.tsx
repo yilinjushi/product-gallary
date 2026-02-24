@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  LayoutDashboard, 
-  PackagePlus, 
-  Package, 
-  Menu, 
-  X, 
+import {
+  LayoutDashboard,
+  PackagePlus,
+  Package,
+  Menu,
+  X,
   LogOut,
   Smartphone,
   AlertTriangle,
@@ -42,8 +42,8 @@ const App: React.FC = () => {
             To use this as a real product, you must connect it to a Supabase backend.
           </p>
           <div className="text-left bg-slate-100 p-4 rounded-lg text-sm font-mono text-slate-700 overflow-x-auto mb-6">
-            1. Go to utils/supabaseClient.ts<br/>
-            2. Enter your SUPABASE_URL<br/>
+            1. Go to utils/supabaseClient.ts<br />
+            2. Enter your SUPABASE_URL<br />
             3. Enter your SUPABASE_ANON_KEY
           </div>
           <p className="text-xs text-slate-400">
@@ -89,10 +89,11 @@ const App: React.FC = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-      // Convert database fields if necessary (DB returns string dates usually)
+
       const formattedData: Product[] = (data || []).map(item => ({
         ...item,
+        fav: item.fav || 300,
+        views: item.views || 3000,
         createdAt: new Date(item.created_at).getTime()
       }));
 
@@ -108,7 +109,7 @@ const App: React.FC = () => {
 
   const handleCreateProduct = async (data: ProductFormData) => {
     if (!session) return;
-    
+
     // Optimistic Update (Optional, but let's stick to fetch for truth)
     try {
       const { error } = await supabase.from('products').insert([{
@@ -116,6 +117,8 @@ const App: React.FC = () => {
         description: data.description,
         images: data.images, // URLs from storage
         tag: data.tag,
+        fav: data.fav,
+        views: data.views,
         user_id: session.user.id
       }]);
 
@@ -130,7 +133,7 @@ const App: React.FC = () => {
 
   const handleUpdateProduct = async (id: string, data: ProductFormData) => {
     if (!session) return;
-    
+
     try {
       const { error } = await supabase
         .from('products')
@@ -138,7 +141,9 @@ const App: React.FC = () => {
           title: data.title,
           description: data.description,
           images: data.images,
-          tag: data.tag
+          tag: data.tag,
+          fav: data.fav,
+          views: data.views
         })
         .eq('id', id);
 
@@ -153,7 +158,7 @@ const App: React.FC = () => {
 
   const handleDeleteProduct = async (id: string) => {
     if (!session) return;
-    
+
     try {
       const { error } = await supabase.from('products').delete().eq('id', id);
       if (error) throw error;
@@ -185,9 +190,9 @@ const App: React.FC = () => {
 
   if (appMode === 'public') {
     return (
-      <PublicView 
-        products={products} 
-        onBackToAdmin={goToAdmin} 
+      <PublicView
+        products={products}
+        onBackToAdmin={goToAdmin}
       />
     );
   }
@@ -200,17 +205,17 @@ const App: React.FC = () => {
   // --- Render Admin View (Authenticated) ---
   return (
     <div className="flex h-screen w-full bg-slate-50 text-slate-900 overflow-hidden">
-      
+
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-20 bg-black/50 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside 
+      <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-30
           w-64 bg-white border-r border-slate-200 transform transition-transform duration-300 ease-in-out
@@ -232,19 +237,19 @@ const App: React.FC = () => {
 
         <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
           <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-2">Inventory</div>
-          
-          <SidebarItem 
-            icon={<Package size={20} />} 
-            label="Product List" 
+
+          <SidebarItem
+            icon={<Package size={20} />}
+            label="Product List"
             isActive={viewState.type === 'list'}
             onClick={() => {
               setViewState({ type: 'list' });
               setIsSidebarOpen(false);
             }}
           />
-          <SidebarItem 
-            icon={<PackagePlus size={20} />} 
-            label="Add Product" 
+          <SidebarItem
+            icon={<PackagePlus size={20} />}
+            label="Add Product"
             isActive={viewState.type === 'create'}
             onClick={() => {
               setViewState({ type: 'create' });
@@ -253,9 +258,9 @@ const App: React.FC = () => {
           />
 
           <div className="mt-8 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-2">Preview</div>
-          <SidebarItem 
-            icon={<Smartphone size={20} />} 
-            label="Live Frontend" 
+          <SidebarItem
+            icon={<Smartphone size={20} />}
+            label="Live Frontend"
             isActive={false}
             onClick={() => {
               goToPublic();
@@ -266,9 +271,9 @@ const App: React.FC = () => {
 
         <div className="p-4 border-t border-slate-100">
           <div className="px-4 py-2 mb-2 text-xs text-slate-400 truncate">
-            Logged in as: <br/> <span className="text-slate-600 font-medium">{session.user.email}</span>
+            Logged in as: <br /> <span className="text-slate-600 font-medium">{session.user.email}</span>
           </div>
-          <button 
+          <button
             onClick={handleSignOut}
             className="flex items-center w-full px-4 py-3 text-sm font-medium text-slate-600 rounded-xl hover:bg-slate-50 transition-colors group"
           >
@@ -295,15 +300,15 @@ const App: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
           <div className="max-w-5xl mx-auto">
             {isLoading ? (
-               <div className="flex h-64 items-center justify-center">
-                 <div className="animate-spin text-slate-300">
-                   <Loader2 size={32} />
-                 </div>
-               </div>
+              <div className="flex h-64 items-center justify-center">
+                <div className="animate-spin text-slate-300">
+                  <Loader2 size={32} />
+                </div>
+              </div>
             ) : (
               <>
                 {viewState.type === 'list' && (
-                  <ProductList 
+                  <ProductList
                     products={products}
                     onEdit={(product) => setViewState({ type: 'edit', product })}
                     onDelete={handleDeleteProduct}
@@ -312,7 +317,7 @@ const App: React.FC = () => {
                 )}
 
                 {viewState.type === 'create' && (
-                  <ProductForm 
+                  <ProductForm
                     mode="create"
                     onSubmit={handleCreateProduct}
                     onCancel={() => setViewState({ type: 'list' })}
@@ -320,7 +325,7 @@ const App: React.FC = () => {
                 )}
 
                 {viewState.type === 'edit' && (
-                  <ProductForm 
+                  <ProductForm
                     mode="edit"
                     initialData={viewState.product}
                     onSubmit={(data) => handleUpdateProduct(viewState.product.id, data)}

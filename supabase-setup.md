@@ -27,9 +27,15 @@ create table if not exists public.products (
   description text not null default '',
   images text[] not null default '{}',
   tag text,
+  fav integer not null default 300,
+  views integer not null default 3000,
   user_id uuid references auth.users(id),
   created_at timestamptz not null default now()
 );
+
+-- 如果表已存在，请执行以下命令添加 fav 和 views 列：
+-- alter table public.products add column fav integer not null default 300;
+-- alter table public.products add column views integer not null default 3000;
 
 -- 启用 RLS
 alter table public.products enable row level security;

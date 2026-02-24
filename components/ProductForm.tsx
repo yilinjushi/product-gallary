@@ -126,6 +126,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [title, setTitle] = useState(initialData?.title || '');
   const [tag, setTag] = useState(initialData?.tag || '');
   const [description, setDescription] = useState(initialData?.description || '');
+  const [fav, setFav] = useState(initialData?.fav ?? 300);
+  const [views, setViews] = useState(initialData?.views ?? 3000);
   const [imageItems, setImageItems] = useState<ImageItem[]>(() =>
     (initialData?.images || []).map((url) => ({ type: 'url' as const, url }))
   );
@@ -221,6 +223,8 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         description,
         images: finalImageList,
         tag: tag.trim() || undefined,
+        fav: Number(fav) || 300,
+        views: Number(views) || 3000,
       });
     } catch (err: any) {
       const msg = err?.message || err?.error_description || 'Failed to save product. Please try again.';
@@ -326,6 +330,34 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   value={tag}
                   onChange={(e) => setTag(e.target.value)}
                   placeholder="e.g. New Arrival"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none text-slate-900 placeholder:text-slate-400"
+                />
+              </div>
+
+              <div className="md:col-span-1">
+                <label htmlFor="fav" className="block text-sm font-semibold text-slate-900 mb-2">
+                  Fav
+                </label>
+                <input
+                  id="fav"
+                  type="number"
+                  value={fav}
+                  onChange={(e) => setFav(parseInt(e.target.value) || 0)}
+                  placeholder="300"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none text-slate-900 placeholder:text-slate-400"
+                />
+              </div>
+
+              <div className="md:col-span-1">
+                <label htmlFor="views" className="block text-sm font-semibold text-slate-900 mb-2">
+                  Views
+                </label>
+                <input
+                  id="views"
+                  type="number"
+                  value={views}
+                  onChange={(e) => setViews(parseInt(e.target.value) || 0)}
+                  placeholder="3000"
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none text-slate-900 placeholder:text-slate-400"
                 />
               </div>
