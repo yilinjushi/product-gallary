@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, ArrowLeft, MoreHorizontal } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, MoreHorizontal, X, Info, Mail } from 'lucide-react';
 import { Product } from '../types';
 import { Post } from './Post';
 
@@ -11,6 +11,9 @@ interface PublicViewProps {
 
 export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin }) => {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   // Handle empty state
   if (products.length === 0) {
@@ -42,16 +45,52 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
 
         {/* Sticky Header */}
         <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100/60 py-3 px-4 flex items-center justify-between cursor-pointer">
-          <div className="flex items-center gap-6">
-            <h1 className="text-[20px] font-bold text-gray-900 tracking-tight">Home</h1>
+          <div className="flex flex-col">
+            <h1 className="text-[20px] font-bold text-gray-900 tracking-tight">先越科技</h1>
+            <p className="text-[13px] text-gray-500">核心技术驱动，助力电子产品快速落地。</p>
           </div>
-          <button
-            onClick={onBackToAdmin}
-            className="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-900"
-            title="Admin Dashboard"
-          >
-            <MoreHorizontal size={20} />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-900"
+            >
+              <MoreHorizontal size={20} />
+            </button>
+
+            <AnimatePresence>
+              {isMenuOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="absolute right-0 top-10 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-1 z-50 origin-top-right"
+                >
+                  <button
+                    onClick={() => { setShowAbout(true); setIsMenuOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-[15px] text-gray-700"
+                  >
+                    <Info size={18} />
+                    <span>关于</span>
+                  </button>
+                  <button
+                    onClick={() => { setShowContact(true); setIsMenuOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-[15px] text-gray-700"
+                  >
+                    <Mail size={18} />
+                    <span>联系</span>
+                  </button>
+                  <div className="h-px bg-gray-100 my-1" />
+                  <button
+                    onClick={() => { onBackToAdmin(); setIsMenuOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-[15px] text-gray-700"
+                  >
+                    <ArrowLeft size={18} />
+                    <span>后台管理</span>
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
         </header>
 
         {/* New Item Composer (Mock) */}
@@ -77,6 +116,85 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
         </div>
 
       </main>
+
+      {/* --- About Modal --- */}
+      <AnimatePresence>
+        {showAbout && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowAbout(false)}
+              className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl"
+            >
+              <button
+                onClick={() => setShowAbout(false)}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="mb-6">
+                <span className="text-sm font-bold tracking-widest uppercase border-b border-black pb-1">关于我们</span>
+              </div>
+
+              <h2 className="text-2xl font-bold mb-4 text-gray-900">先越科技 (DEMO)</h2>
+              <p className="text-gray-500 leading-relaxed text-[15px] mb-6">
+                这是一家致力于通过核心技术驱动创新的科技企业。这里是关于公司的Demo介绍文字。真实的内容将在此展示我们的愿景、使命和技术实力。
+              </p>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* --- Contact Modal --- */}
+      <AnimatePresence>
+        {showContact && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowContact(false)}
+              className="absolute inset-0 bg-black/20 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl"
+            >
+              <button
+                onClick={() => setShowContact(false)}
+                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X size={20} />
+              </button>
+
+              <div className="mb-6">
+                <span className="text-sm font-bold tracking-widest uppercase border-b border-black pb-1">联系我们</span>
+              </div>
+
+              <h2 className="text-2xl font-bold mb-4 text-gray-900">与我们合作 (DEMO)</h2>
+              <p className="text-gray-500 leading-relaxed text-[15px] mb-6">
+                如果您对我们的技术或产品感兴趣，请通过以下方式联系我们。这里是联系方式的Demo文本，如邮箱、电话等。
+              </p>
+
+              <div className="flex flex-col gap-2 text-sm text-gray-700 bg-gray-50 p-4 rounded-xl">
+                <p>Email: contact@demo.com</p>
+                <p>Phone: +86 100 0000 0000</p>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Lightbox / Zoomed Image Overlay */}
       <AnimatePresence>
