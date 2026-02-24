@@ -14,6 +14,13 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [targetProductId, setTargetProductId] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get('product');
+    if (pid) setTargetProductId(pid);
+  }, []);
 
   // Handle empty state
   if (products.length === 0) {
@@ -33,14 +40,6 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
       </div>
     );
   }
-
-  const [targetProductId, setTargetProductId] = useState<string | null>(null);
-
-  React.useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const pid = params.get('product');
-    if (pid) setTargetProductId(pid);
-  }, []);
 
   // Ensure newest first (in case the query wasn't perfect, or for optimistic updates)
   let displayProducts = [...products].sort((a, b) => b.createdAt - a.createdAt);
