@@ -242,18 +242,26 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onB
             <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden pointer-events-none select-none p-4">
               <AnimatePresence mode="wait">
                 <motion.img
-                  key={lightboxData.currentIndex}
                   src={lightboxData.images[lightboxData.currentIndex]}
                   alt="Zoomed product"
                   className="max-w-full max-h-[85vh] object-contain shadow-2xl pointer-events-auto cursor-grab active:cursor-grabbing rounded-xl z-50"
-                  drag="x"
-                  dragConstraints={{ left: 0, right: 0 }}
+                  drag
+                  dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
                   dragElastic={1}
                   onDragEnd={(_, { offset }) => {
-                    const swipe = offset.x;
-                    if (swipe < -50 && lightboxData.currentIndex < lightboxData.images.length - 1) {
+                    const swipeX = offset.x;
+                    const swipeY = offset.y;
+
+                    // Close on vertical swipe (up or down)
+                    if (Math.abs(swipeY) > 80) {
+                      setLightboxData(null);
+                      return;
+                    }
+
+                    // Process horizontal swipe for next/prev
+                    if (swipeX < -50 && lightboxData.currentIndex < lightboxData.images.length - 1) {
                       setLightboxData({ ...lightboxData, currentIndex: lightboxData.currentIndex + 1 });
-                    } else if (swipe > 50 && lightboxData.currentIndex > 0) {
+                    } else if (swipeX > 50 && lightboxData.currentIndex > 0) {
                       setLightboxData({ ...lightboxData, currentIndex: lightboxData.currentIndex - 1 });
                     }
                   }}
