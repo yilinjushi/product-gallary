@@ -6,10 +6,11 @@ import { Post } from './Post';
 
 interface PublicViewProps {
   products: Product[];
+  isLoading?: boolean;
   onBackToAdmin: () => void;
 }
 
-export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin }) => {
+export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onBackToAdmin }) => {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
@@ -23,7 +24,7 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
   }, []);
 
   // Handle empty state
-  if (products.length === 0) {
+  if (!isLoading && products.length === 0) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8">
         <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6">
@@ -121,13 +122,19 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, onBackToAdmin 
 
         {/* Feed Posts */}
         <div className="flex-1 pb-20">
-          {displayProducts.map(product => (
-            <Post
-              key={product.id}
-              product={product}
-              onImageClick={(img) => setLightboxImage(img)}
-            />
-          ))}
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+          ) : (
+            displayProducts.map(product => (
+              <Post
+                key={product.id}
+                product={product}
+                onImageClick={(img) => setLightboxImage(img)}
+              />
+            ))
+          )}
         </div>
 
       </main>

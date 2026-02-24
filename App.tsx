@@ -192,6 +192,7 @@ const App: React.FC = () => {
     return (
       <PublicView
         products={products}
+        isLoading={isLoading}
         onBackToAdmin={goToAdmin}
       />
     );
