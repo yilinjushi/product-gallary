@@ -10,8 +10,8 @@ interface PostProps {
 
 export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
     const [isLiked, setIsLiked] = useState(false);
-    const [likesCount, setLikesCount] = useState(Math.floor(Math.random() * 500) + 10);
-    const [viewsCount] = useState(Math.floor(Math.random() * 5000) + 1000);
+    const [likesCount, setLikesCount] = useState(product.fav || 0);
+    const [viewsCount] = useState(product.views || 0);
 
     const handleLike = () => {
         setIsLiked(!isLiked);
@@ -111,7 +111,7 @@ export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
                 )}
 
                 {/* Interaction Bar */}
-                <div className="flex items-center justify-between text-gray-500 max-w-sm mt-1" onClick={handleActionClick}>
+                <div className="flex items-center gap-12 sm:gap-16 text-gray-500 mt-1" onClick={handleActionClick}>
                     <button
                         onClick={handleLike}
                         className={`flex items-center gap-2 group p-0 transition-colors ${isLiked ? 'text-pink-600' : 'hover:text-pink-600'}`}
