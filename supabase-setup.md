@@ -53,6 +53,25 @@ create policy "Users can update own products"
   using (auth.uid() = user_id)
   with check (auth.uid() = user_id);
 
+-- 安全的 RPC 函数：允许任何人增加商品的心数和曝光量
+create or replace function increment_views(product_id uuid)
+returns void as $$
+begin
+  update products
+  set views = views + 1
+  where id = product_id;
+end;
+$$ language plpgsql security definer;
+
+create or replace function increment_fav(product_id uuid, amount int)
+returns void as $$
+begin
+  update products
+  set fav = fav + amount
+  where id = product_id;
+end;
+$$ language plpgsql security definer;
+
 -- 已登录用户可删除自己的行
 create policy "Users can delete own products"
   on public.products for delete

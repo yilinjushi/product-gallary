@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Heart, Share, BarChart2 } from 'lucide-react';
 import { Product } from '../types';
 import { formatRelativeTime } from '../utils/dateUtils';
+import { supabase } from '../utils/supabaseClient';
 
 interface PostProps {
     product: Product;
@@ -11,15 +12,56 @@ interface PostProps {
 export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(product.fav || 0);
-    const [viewsCount] = useState(product.views || 0);
+    const [viewsCount, setViewsCount] = useState(product.views || 0);
 
-    const handleLike = () => {
-        setIsLiked(!isLiked);
-        setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+    // Increment views once when post renders (in a real app, you might want more complex viewed-state logic)
+    React.useEffect(() => {
+        let isMounted = true;
+        const incrementView = async () => {
+            try {
+                // To avoid multiple rapid calls, we optimistically update local state first
+                const newViews = viewsCount + 1;
+                if (isMounted) setViewsCount(newViews);
+                // Call RPC to increment safely, or direct update (less safe for concurrency but works for simple case)
+                await supabase.rpc('increment_views', { product_id: product.id });
+                // We will add the RPC later, but if RPC doesn't exist, we can fallback to:
+                // await supabase.from('products').update({ views: newViews }).eq('id', product.id);
+            } catch (err) {
+                console.error("Failed to increment views:", err);
+            }
+        };
+        incrementView();
+
+        return () => { isMounted = false; };
+        // We only want this to run once on mount per product
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [product.id]);
+
+    const handleLike = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const newLikedState = !isLiked;
+        setIsLiked(newLikedState);
+
+        const change = newLikedState ? 1 : -1;
+        const newLikesCount = Math.max(0, likesCount + change);
+        setLikesCount(newLikesCount);
+
+        try {
+            const { error } = await supabase.rpc('increment_fav', {
+                product_id: product.id,
+                amount: change
+            });
+            if (error) throw error;
+        } catch (err) {
+            console.error("Failed to update likes:", err);
+            // Revert on failure
+            setIsLiked(!newLikedState);
+            setLikesCount(likesCount);
+        }
     };
 
-    const handleActionClick = (e: React.MouseEvent) => {
-        e.stopPropagation(); // Prevent opening post details when clicking actions
+    const handleActionClick = () => {
+        // Events are stopped individually by child buttons
     };
 
     const handleShare = (e: React.MouseEvent) => {
