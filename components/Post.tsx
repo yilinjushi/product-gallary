@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, Repeat2, Heart, Share, BarChart2 } from 'lucide-react';
+import { Heart, Share, BarChart2 } from 'lucide-react';
 import { Product } from '../types';
 import { formatRelativeTime } from '../utils/dateUtils';
 
@@ -11,7 +11,6 @@ interface PostProps {
 export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(Math.floor(Math.random() * 500) + 10);
-    const [retweetsCount] = useState(Math.floor(Math.random() * 100));
     const [viewsCount] = useState(Math.floor(Math.random() * 5000) + 1000);
 
     const handleLike = () => {
@@ -21,6 +20,16 @@ export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
 
     const handleActionClick = (e: React.MouseEvent) => {
         e.stopPropagation(); // Prevent opening post details when clicking actions
+    };
+
+    const handleShare = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const url = `${window.location.origin}${window.location.pathname}?product=${product.id}`;
+        navigator.clipboard.writeText(url).then(() => {
+            alert("产品链接已复制到剪贴板！");
+        }).catch(err => {
+            console.error("复制链接失败: ", err);
+        });
     };
 
     // Generate a mock handle based on title or static brand
@@ -102,21 +111,7 @@ export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
                 )}
 
                 {/* Interaction Bar */}
-                <div className="flex items-center justify-between text-gray-500 max-w-md mt-1" onClick={handleActionClick}>
-                    <button className="flex items-center gap-2 group p-0 transition-colors hover:text-blue-500">
-                        <div className="p-2 rounded-full group-hover:bg-blue-50 transition-colors -ml-2">
-                            <MessageCircle size={18} strokeWidth={1.5} />
-                        </div>
-                        <span className="text-[13px]">{Math.floor(Math.random() * 50)}</span>
-                    </button>
-
-                    <button className="flex items-center gap-2 group p-0 transition-colors hover:text-green-500">
-                        <div className="p-2 rounded-full group-hover:bg-green-50 transition-colors -ml-2">
-                            <Repeat2 size={18} strokeWidth={1.5} />
-                        </div>
-                        <span className="text-[13px]">{formatCount(retweetsCount)}</span>
-                    </button>
-
+                <div className="flex items-center justify-between text-gray-500 max-w-sm mt-1" onClick={handleActionClick}>
                     <button
                         onClick={handleLike}
                         className={`flex items-center gap-2 group p-0 transition-colors ${isLiked ? 'text-pink-600' : 'hover:text-pink-600'}`}
@@ -134,7 +129,11 @@ export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
                         <span className="text-[13px]">{formatCount(viewsCount)}</span>
                     </button>
 
-                    <button className="flex items-center group p-0 transition-colors hover:text-blue-500">
+                    <button
+                        onClick={handleShare}
+                        className="flex items-center group p-0 transition-colors hover:text-blue-500"
+                        title="分享链接"
+                    >
                         <div className="p-2 rounded-full group-hover:bg-blue-50 transition-colors -ml-2">
                             <Share size={18} strokeWidth={1.5} />
                         </div>
