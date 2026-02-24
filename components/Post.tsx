@@ -87,7 +87,7 @@ export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
 
             {/* Main Post Content */}
             <div className="flex-1 min-w-0 pb-1">
-                
+
                 {/* Text Content */}
                 <div className="text-[15px] text-gray-900 leading-snug break-words mb-3">
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -148,7 +148,7 @@ export const Post: React.FC<PostProps> = ({ product, onImageClick }) => {
                         className={`flex items-center gap-2 group p-0 transition-colors ${isLiked ? 'text-pink-600' : 'hover:text-pink-600'}`}
                     >
                         <div className="p-2 rounded-full group-hover:bg-pink-50 transition-colors -ml-2">
-                            <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.5} className={isLiked ? "animate-bounce" : ""} />
+                            <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.5} className={isLiked ? "animate-heart-bounce" : ""} />
                         </div>
                         <span className="text-[13px]">{formatCount(likesCount)}</span>
                     </button>
