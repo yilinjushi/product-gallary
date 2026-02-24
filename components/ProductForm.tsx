@@ -33,13 +33,11 @@ function getItemId(item: ImageItem): string {
 function SortableImageCard({
   item,
   index,
-  total,
   onRemove,
   onMove,
 }: {
   item: ImageItem;
   index: number;
-  total: number;
   onRemove: () => void;
   onMove: (dir: -1 | 1) => void;
 }) {
@@ -211,7 +209,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
     setError(null);
     try {
       const filesInOrder = imageItems
-        .filter((item): item is { type: 'file'; file: File } => item.type === 'file')
+        .filter((item): item is Extract<ImageItem, { type: 'file' }> => item.type === 'file')
         .map((item) => item.file);
       const uploadedUrls = await uploadFiles(filesInOrder);
       let fileIndex = 0;
@@ -235,7 +233,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   return (
     <div className="animate-fade-in-up">
       <div className="flex items-center justify-between mb-6">
-        <button 
+        <button
           onClick={onCancel}
           className="flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors group"
         >
@@ -251,7 +249,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-8">
-          
+
           {/* Image Upload & Order */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -282,7 +280,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                       key={getItemId(item)}
                       item={item}
                       index={idx}
-                      total={imageItems.length}
                       onRemove={() => removeImage(idx)}
                       onMove={(dir) => moveImage(idx, dir)}
                     />
@@ -333,7 +330,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 />
               </div>
             </div>
-            
+
             <div>
               <label htmlFor="description" className="block text-sm font-semibold text-slate-900 mb-2">
                 Description
