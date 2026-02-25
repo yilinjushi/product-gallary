@@ -159,8 +159,8 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
           </div>
         </header>
 
-        {/* Feed Posts (with top padding for fixed header) */}
-        <div className="flex-1 pb-20 pt-16">
+        {/* Feed Posts (with top padding for fixed header + safe area) */}
+        <div className="flex-1 pb-20" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
           {displayProducts.map(product => (
             <Post
               key={product.id}
