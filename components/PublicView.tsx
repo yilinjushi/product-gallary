@@ -205,7 +205,6 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
                 <span className="text-sm font-bold tracking-widest uppercase border-b border-black pb-1">关于我们</span>
               </div>
 
-              <h2 className="text-2xl font-bold mb-4 text-gray-900">先越科技</h2>
               <p className="text-gray-500 leading-relaxed text-[15px] mb-6 whitespace-pre-wrap">
                 {settings?.about_text || '暂无关于信息。'}
               </p>
@@ -242,7 +241,6 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
                 <span className="text-sm font-bold tracking-widest uppercase border-b border-black pb-1">联系我们</span>
               </div>
 
-              <h2 className="text-2xl font-bold mb-4 text-gray-900">与我们合作</h2>
               <p className="text-gray-500 leading-relaxed text-[15px] mb-2 whitespace-pre-wrap">
                 {settings?.contact_text || '暂无联系信息。'}
               </p>
