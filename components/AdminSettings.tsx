@@ -27,7 +27,8 @@ export const AdminSettings: React.FC<AdminSettingsProps> = ({ settings, onUpdate
         try {
             const { data, error } = await supabase
                 .from('site_settings')
-                .upsert({ id: 1, about_text: aboutText, contact_text: contactText })
+                .update({ about_text: aboutText, contact_text: contactText })
+                .eq('id', 1)
                 .select()
                 .single();
 
