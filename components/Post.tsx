@@ -90,7 +90,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
     };
 
     return (
-        <article className="py-6 border-b border-white/5 bg-black hover:bg-[#0a0a0a] transition-colors cursor-default block">
+        <article className="py-6 border-b-2 border-white/20 bg-black hover:bg-[#0a0a0a] transition-colors cursor-default block">
 
             {/* Media Attachments (Full Width Area) */}
             {product.images && product.images.length > 0 && (
