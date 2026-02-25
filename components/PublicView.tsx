@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ArrowLeft, MoreHorizontal, X, Info, Mail } from 'lucide-react';
-import { Product } from '../types';
+import { Product, SiteSettings } from '../types';
 import { Post } from './Post';
 
 interface PublicViewProps {
@@ -11,9 +11,10 @@ interface PublicViewProps {
   isLoadingMore?: boolean;
   onLoadMore?: () => void;
   onBackToAdmin: () => void;
+  settings?: SiteSettings | null;
 }
 
-export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, hasMore, isLoadingMore, onLoadMore, onBackToAdmin }) => {
+export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, hasMore, isLoadingMore, onLoadMore, onBackToAdmin, settings }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -204,9 +205,9 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
                 <span className="text-sm font-bold tracking-widest uppercase border-b border-black pb-1">关于我们</span>
               </div>
 
-              <h2 className="text-2xl font-bold mb-4 text-gray-900">先越科技 (DEMO)</h2>
-              <p className="text-gray-500 leading-relaxed text-[15px] mb-6">
-                这是一家致力于通过核心技术驱动创新的科技企业。这里是关于公司的Demo介绍文字。真实的内容将在此展示我们的愿景、使命和技术实力。
+              <h2 className="text-2xl font-bold mb-4 text-gray-900">先越科技</h2>
+              <p className="text-gray-500 leading-relaxed text-[15px] mb-6 whitespace-pre-wrap">
+                {settings?.about_text || '暂无关于信息。'}
               </p>
             </motion.div>
           </div>
@@ -241,15 +242,10 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
                 <span className="text-sm font-bold tracking-widest uppercase border-b border-black pb-1">联系我们</span>
               </div>
 
-              <h2 className="text-2xl font-bold mb-4 text-gray-900">与我们合作 (DEMO)</h2>
-              <p className="text-gray-500 leading-relaxed text-[15px] mb-6">
-                如果您对我们的技术或产品感兴趣，请通过以下方式联系我们。这里是联系方式的Demo文本，如邮箱、电话等。
+              <h2 className="text-2xl font-bold mb-4 text-gray-900">与我们合作</h2>
+              <p className="text-gray-500 leading-relaxed text-[15px] mb-2 whitespace-pre-wrap">
+                {settings?.contact_text || '暂无联系信息。'}
               </p>
-
-              <div className="flex flex-col gap-2 text-sm text-gray-700 bg-gray-50 p-4 rounded-xl">
-                <p>Email: contact@demo.com</p>
-                <p>Phone: +86 100 0000 0000</p>
-              </div>
             </motion.div>
           </div>
         )}

@@ -8,13 +8,15 @@ import {
   LogOut,
   Smartphone,
   AlertTriangle,
-  Loader2
+  Loader2,
+  Settings
 } from 'lucide-react';
 import { ProductList } from './components/ProductList';
 import { ProductForm } from './components/ProductForm';
 import { PublicView } from './components/PublicView';
+import { AdminSettings } from './components/AdminSettings';
 import { Auth } from './components/Auth';
-import { Product, ViewState, ProductFormData } from './types';
+import { Product, ViewState, ProductFormData, SiteSettings } from './types';
 import { SidebarItem } from './components/SidebarItem';
 import { supabase, isConfigured } from './utils/supabaseClient';
 
@@ -32,6 +34,7 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
 
   // --- Effects ---
 
@@ -70,6 +73,18 @@ const App: React.FC = () => {
       setSession(session);
     });
 
+    const fetchSettings = async () => {
+      try {
+        const { data, error } = await supabase.from('site_settings').select('*').eq('id', 1).single();
+        if (!error && data) {
+          setSiteSettings(data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch settings:', err);
+      }
+    };
+
+    fetchSettings();
     fetchProducts();
 
     return () => subscription.unsubscribe();
@@ -233,6 +248,7 @@ const App: React.FC = () => {
         isLoadingMore={isLoadingMore}
         onLoadMore={loadMoreProducts}
         onBackToAdmin={goToAdmin}
+        settings={siteSettings}
       />
     );
   }
@@ -293,6 +309,17 @@ const App: React.FC = () => {
             isActive={viewState.type === 'create'}
             onClick={() => {
               setViewState({ type: 'create' });
+              setIsSidebarOpen(false);
+            }}
+          />
+
+          <div className="mt-8 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-2">System</div>
+          <SidebarItem
+            icon={<Settings size={20} />}
+            label="Settings"
+            isActive={viewState.type === 'settings'}
+            onClick={() => {
+              setViewState({ type: 'settings' });
               setIsSidebarOpen(false);
             }}
           />
@@ -370,6 +397,13 @@ const App: React.FC = () => {
                     initialData={viewState.product}
                     onSubmit={(data) => handleUpdateProduct(viewState.product.id, data)}
                     onCancel={() => setViewState({ type: 'list' })}
+                  />
+                )}
+
+                {viewState.type === 'settings' && (
+                  <AdminSettings
+                    settings={siteSettings}
+                    onUpdate={(newSettings) => setSiteSettings(newSettings)}
                   />
                 )}
               </>

@@ -23,4 +23,11 @@ export type ViewType = 'list' | 'create' | 'edit';
 export type ViewState =
   | { type: 'list' }
   | { type: 'create' }
-  | { type: 'edit'; product: Product };
+  | { type: 'edit'; product: Product }
+  | { type: 'settings' };
+
+export interface SiteSettings {
+  id: number;
+  about_text: string;
+  contact_text: string;
+}
