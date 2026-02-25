@@ -76,8 +76,8 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
     );
   }
 
-  // Ensure newest first (in case the query wasn't perfect, or for optimistic updates)
-  let displayProducts = [...products].sort((a, b) => b.createdAt - a.createdAt);
+  // Sort by admin-defined order (sort_order ascending)
+  let displayProducts = [...products].sort((a, b) => a.sort_order - b.sort_order);
 
   if (targetProductId) {
     const target = displayProducts.find(p => p.id === targetProductId);

@@ -6,6 +6,7 @@ export interface Product {
   tag?: string;
   fav: number;
   views: number;
+  sort_order: number;
   createdAt: number;
 }
 

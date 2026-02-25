@@ -4,31 +4,158 @@ import {
   Search,
   Edit3,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  GripVertical,
 } from 'lucide-react';
 import { Product } from '../types';
 import { formatDate } from '../utils/helpers';
+
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface ProductListProps {
   products: Product[];
   onEdit: (product: Product) => void;
   onDelete: (id: string) => void;
   onAddNew: () => void;
+  onReorder: (products: Product[]) => void;
 }
 
+// --- Sortable Row Sub-component ---
+const SortableRow: React.FC<{
+  product: Product;
+  onEdit: (product: Product) => void;
+  onDeleteRequest: (id: string) => void;
+  isDragDisabled: boolean;
+}> = ({ product, onEdit, onDeleteRequest, isDragDisabled }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: product.id, disabled: isDragDisabled });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : 'auto' as any,
+    position: 'relative' as any,
+    opacity: isDragging ? 0.85 : 1,
+    boxShadow: isDragging ? '0 8px 25px rgba(0,0,0,0.15)' : 'none',
+    backgroundColor: isDragging ? '#f8fafc' : undefined,
+  };
+
+  return (
+    <tr ref={setNodeRef} style={style} className="hover:bg-slate-50/50 transition-colors group">
+      {/* Drag Handle */}
+      <td className="pl-2 pr-0 py-4 w-8">
+        {!isDragDisabled && (
+          <button
+            {...attributes}
+            {...listeners}
+            className="p-1 text-slate-300 hover:text-slate-500 cursor-grab active:cursor-grabbing rounded touch-none"
+            title="拖动排序"
+          >
+            <GripVertical size={16} />
+          </button>
+        )}
+      </td>
+      <td className="px-4 py-4">
+        <div className="flex items-center">
+          <div className="h-12 w-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0">
+            {product.images[0] ? (
+              <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-slate-300 text-xs">No Img</div>
+            )}
+          </div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-slate-900">{product.title}</div>
+            <div className="text-xs text-slate-500 line-clamp-1 max-w-xs">{product.description}</div>
+          </div>
+        </div>
+      </td>
+      <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+        <span className="text-sm text-slate-500">{formatDate(product.createdAt)}</span>
+      </td>
+      <td className="px-6 py-4 text-right">
+        <div className="flex items-center justify-end space-x-2">
+          <button
+            onClick={() => onEdit(product)}
+            className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+            title="Edit"
+          >
+            <Edit3 size={18} />
+          </button>
+          <button
+            onClick={() => onDeleteRequest(product.id)}
+            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            title="Delete"
+          >
+            <Trash2 size={18} />
+          </button>
+        </div>
+      </td>
+    </tr>
+  );
+};
+
+// --- Main ProductList Component ---
 export const ProductList: React.FC<ProductListProps> = ({
   products,
   onEdit,
   onDelete,
-  onAddNew
+  onAddNew,
+  onReorder,
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const filteredProducts = products.filter(p =>
-    p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const isSearchActive = searchTerm.trim().length > 0;
+
+  const filteredProducts = isSearchActive
+    ? products.filter(p =>
+      p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.description.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    : products;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    })
   );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = products.findIndex(p => p.id === active.id);
+    const newIndex = products.findIndex(p => p.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reordered = arrayMove(products, oldIndex, newIndex).map((p, idx) => ({
+      ...p,
+      sort_order: idx,
+    }));
+    onReorder(reordered);
+  };
 
   return (
     <>
@@ -37,7 +164,7 @@ export const ProductList: React.FC<ProductListProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Products</h1>
-            <p className="text-slate-500 text-sm mt-1">Manage your product inventory</p>
+            <p className="text-slate-500 text-sm mt-1">Manage your product inventory — drag to reorder</p>
           </div>
           <button
             onClick={onAddNew}
@@ -76,61 +203,39 @@ export const ProductList: React.FC<ProductListProps> = ({
               <p className="text-slate-500 text-sm">Try adjusting your search or add a new product.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-100">
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Product</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Date Added</th>
-                    <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredProducts.map((product) => (
-                    <tr key={product.id} className="hover:bg-slate-50/50 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="h-12 w-12 rounded-lg bg-slate-100 border border-slate-200 overflow-hidden flex-shrink-0">
-                            {product.images[0] ? (
-                              <img src={product.images[0]} alt="" className="w-full h-full object-cover" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-slate-300 text-xs">No Img</div>
-                            )}
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-slate-900">{product.title}</div>
-                            <div className="text-xs text-slate-500 line-clamp-1 max-w-xs">{product.description}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                        <span className="text-sm text-slate-500">{formatDate(product.createdAt)}</span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end space-x-2">
-                          <button
-                            onClick={() => onEdit(product)}
-                            className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                            title="Edit"
-                          >
-                            <Edit3 size={18} />
-                          </button>
-                          <button
-                            onClick={() => setDeleteId(product.id)}
-                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+              <SortableContext items={filteredProducts.map(p => p.id)} strategy={verticalListSortingStrategy}>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-100">
+                        <th className="pl-2 pr-0 py-4 w-8"></th>
+                        <th className="px-4 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Product</th>
+                        <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Date Added</th>
+                        <th className="px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {filteredProducts.map((product) => (
+                        <SortableRow
+                          key={product.id}
+                          product={product}
+                          onEdit={onEdit}
+                          onDeleteRequest={setDeleteId}
+                          isDragDisabled={isSearchActive}
+                        />
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </SortableContext>
+            </DndContext>
           )}
         </div>
+
+        {isSearchActive && (
+          <p className="text-xs text-slate-400 mt-3 text-center">拖拽排序在搜索时不可用，请先清空搜索条件。</p>
+        )}
       </div>
 
       {/* Delete Confirmation Modal */}

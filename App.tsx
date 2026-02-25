@@ -94,6 +94,7 @@ const App: React.FC = () => {
       let query = supabase
         .from('products')
         .select('*')
+        .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false });
 
       if (mode === 'public') {
@@ -108,6 +109,7 @@ const App: React.FC = () => {
         ...item,
         fav: item.fav || 300,
         views: item.views || 3000,
+        sort_order: item.sort_order ?? 0,
         createdAt: new Date(item.created_at).getTime()
       }));
 
@@ -134,6 +136,7 @@ const App: React.FC = () => {
       const { data, error } = await supabase
         .from('products')
         .select('*')
+        .order('sort_order', { ascending: true })
         .order('created_at', { ascending: false })
         .range(from, to);
 
@@ -143,6 +146,7 @@ const App: React.FC = () => {
         ...item,
         fav: item.fav || 300,
         views: item.views || 3000,
+        sort_order: item.sort_order ?? 0,
         createdAt: new Date(item.created_at).getTime()
       }));
 
@@ -219,6 +223,29 @@ const App: React.FC = () => {
     }
   };
 
+  const handleReorderProducts = async (reorderedProducts: Product[]) => {
+    // Optimistic update
+    setProducts(reorderedProducts);
+
+    try {
+      const updates = reorderedProducts.map((p, index) => ({
+        id: p.id,
+        sort_order: index
+      }));
+
+      for (const u of updates) {
+        const { error } = await supabase
+          .from('products')
+          .update({ sort_order: u.sort_order })
+          .eq('id', u.id);
+        if (error) throw error;
+      }
+    } catch (error) {
+      console.error("Error reordering products:", error);
+      fetchProducts(); // Rollback on failure
+    }
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     setAppMode('public');
@@ -282,6 +309,7 @@ const App: React.FC = () => {
               onEdit={(product) => setViewState({ type: 'edit', product })}
               onDelete={handleDeleteProduct}
               onAddNew={() => setViewState({ type: 'create' })}
+              onReorder={handleReorderProducts}
             />
           )}
 
