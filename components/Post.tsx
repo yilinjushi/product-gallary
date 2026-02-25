@@ -115,7 +115,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
 
                     {/* Tag Badge - Top Left */}
                     {product.tag && (
-                        <div className="absolute top-3 left-5 z-10">
+                        <div className="absolute top-3 left-4 z-10">
                             <span className="bg-black/60 backdrop-blur-md text-amber-500 border border-white/10 text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wide">
                                 {product.tag}
                             </span>
@@ -169,8 +169,8 @@ export const Post: React.FC<PostProps> = ({ product }) => {
             <div
                 className="min-w-0"
                 style={{
-                    paddingLeft: 'max(2rem, env(safe-area-inset-left))',
-                    paddingRight: 'max(2rem, env(safe-area-inset-right))'
+                    paddingLeft: 'max(1.75rem, env(safe-area-inset-left))',
+                    paddingRight: 'max(1.75rem, env(safe-area-inset-right))'
                 }}
             >
 
