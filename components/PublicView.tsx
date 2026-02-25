@@ -107,31 +107,11 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
     <div className="min-h-screen bg-black flex justify-center font-sans tracking-tight text-white">
 
       {/* Main Timeline Column */}
-      <main className="w-full min-h-screen flex flex-col relative bg-black/90">
-
-        {/* Dynamic Background Layer */}
-        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-          <motion.div
-            className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] bg-blue-900/20 rounded-full mix-blend-screen filter blur-[120px]"
-            animate={{
-              x: [0, 50, 0],
-              y: [0, 40, 0],
-            }}
-            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          />
-          <motion.div
-            className="absolute bottom-[-10%] right-[-20%] w-[70%] h-[70%] bg-purple-900/15 rounded-full mix-blend-screen filter blur-[150px]"
-            animate={{
-              x: [0, -60, 0],
-              y: [0, -30, 0],
-            }}
-            transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-          />
-        </div>
+      <main className="w-full min-h-screen flex flex-col relative bg-black">
 
         {/* Fixed Header */}
         <header
-          className="fixed top-0 left-0 right-0 z-50 bg-black/40 backdrop-blur-2xl border-b border-white/[0.08] shadow-[0_4px_30px_rgba(0,0,0,0.5)] pt-3 flex flex-col cursor-pointer transition-all duration-300"
+          className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 pt-3 flex flex-col cursor-pointer transition-all duration-300"
           style={{
             paddingTop: 'max(0.75rem, env(safe-area-inset-top))'
           }}
@@ -214,7 +194,7 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
 
         {/* Feed Posts */}
         <div
-          className="flex-1 pb-20 max-w-7xl mx-auto w-full px-0 sm:px-6 lg:px-8 mt-2 relative z-10"
+          className="flex-1 pb-20 max-w-7xl mx-auto w-full px-0 sm:px-6 lg:px-8 mt-2"
           style={{ paddingTop: !targetProductId && categories.length > 1 ? 'calc(7.5rem + env(safe-area-inset-top, 0px))' : 'calc(4.5rem + env(safe-area-inset-top, 0px))' }}
         >
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
