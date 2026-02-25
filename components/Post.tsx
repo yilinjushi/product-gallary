@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Heart, Share, BarChart2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '../types';
-import { formatRelativeTime } from '../utils/dateUtils';
 import { supabase } from '../utils/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -245,9 +244,6 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-2 text-[13px] text-gray-400 font-medium whitespace-nowrap">
-                        <span>{formatRelativeTime(product.createdAt)}</span>
-                    </div>
 
                 </div>
             </div>
