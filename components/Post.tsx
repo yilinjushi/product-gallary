@@ -183,12 +183,12 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                             {formatCount(likesCount)}
                         </button>
 
-                        <button className="flex items-center gap-2 group p-0 transition-colors text-gray-400 hover:text-amber-500">
-                            <div className="p-2 rounded-full group-hover:bg-white/5 transition-colors -ml-2 cursor-default">
+                        <div className="flex items-center gap-2 text-gray-400 p-0 cursor-default">
+                            <div className="p-2 -ml-2">
                                 <BarChart2 size={20} strokeWidth={1.5} />
                             </div>
                             <span className="text-[14px] font-medium">{formatCount(viewsCount)}</span>
-                        </button>
+                        </div>
 
                         <button
                             onClick={handleShare}
