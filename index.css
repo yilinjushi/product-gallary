@@ -26,3 +26,9 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Prevent horizontal overflow on mobile browsers */
+html, body {
+  overflow-x: hidden;
+  width: 100vw;
+}

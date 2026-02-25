@@ -166,7 +166,13 @@ export const Post: React.FC<PostProps> = ({ product }) => {
             )}
 
             {/* Content Area */}
-            <div className="px-5 min-w-0">
+            <div
+                className="min-w-0"
+                style={{
+                    paddingLeft: 'max(1.25rem, env(safe-area-inset-left))',
+                    paddingRight: 'max(1.25rem, env(safe-area-inset-right))'
+                }}
+            >
 
                 {/* Text Content */}
                 <div className="text-[15px] text-gray-200 leading-snug break-words mb-4">

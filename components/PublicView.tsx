@@ -94,8 +94,12 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
 
         {/* Sticky Header */}
         <header
-          className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-3 px-4 flex items-center justify-between cursor-pointer"
-          style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
+          className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-3 flex items-center justify-between cursor-pointer"
+          style={{
+            paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
+            paddingLeft: 'max(1.25rem, env(safe-area-inset-left))',
+            paddingRight: 'max(1.25rem, env(safe-area-inset-right))'
+          }}
           onClick={() => {
             if (targetProductId) window.location.href = window.location.pathname;
           }}
