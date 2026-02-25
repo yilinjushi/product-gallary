@@ -3,6 +3,7 @@ import { Heart, Share, BarChart2, ChevronLeft, ChevronRight } from 'lucide-react
 import { Product } from '../types';
 import { formatRelativeTime } from '../utils/dateUtils';
 import { supabase } from '../utils/supabaseClient';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface PostProps {
     product: Product;
@@ -13,7 +14,9 @@ export const Post: React.FC<PostProps> = ({ product }) => {
     const [likesCount, setLikesCount] = useState(product.fav || 0);
     const [viewsCount, setViewsCount] = useState(product.views || 0);
     const [activeIndex, setActiveIndex] = useState(0);
+    const [showHeartOverlay, setShowHeartOverlay] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const lastTapRef = useRef<number>(0);
 
     // Increment views once when post renders
     React.useEffect(() => {
@@ -33,8 +36,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [product.id]);
 
-    const handleLike = async (e: React.MouseEvent) => {
-        e.stopPropagation();
+    const toggleLike = async () => {
         const newLikedState = !isLiked;
         setIsLiked(newLikedState);
 
@@ -52,6 +54,28 @@ export const Post: React.FC<PostProps> = ({ product }) => {
             console.error("Failed to update likes:", err);
             setIsLiked(!newLikedState);
             setLikesCount(likesCount);
+        }
+    };
+
+    const handleLikeClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        toggleLike();
+    };
+
+    const handleImageTap = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const now = Date.now();
+        const DOUBLE_TAP_DELAY = 300;
+
+        if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+            setShowHeartOverlay(true);
+            if (!isLiked) {
+                toggleLike();
+            }
+            setTimeout(() => setShowHeartOverlay(false), 800);
+            lastTapRef.current = 0;
+        } else {
+            lastTapRef.current = now;
         }
     };
 
@@ -102,10 +126,10 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
                         {product.images.map((img, idx) => (
-                            <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative bg-[#1a1a1a]">
+                            <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative bg-[#1a1a1a] cursor-pointer" onClick={handleImageTap}>
                                 <img
                                     src={img}
-                                    className="absolute inset-0 w-full h-full object-cover"
+                                    className="absolute inset-0 w-full h-full object-cover select-none"
                                     alt={product.title}
                                     loading="lazy"
                                 />
@@ -125,7 +149,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                     {/* Like Button - Top Right */}
                     <div className="absolute top-3 right-3 z-10">
                         <button
-                            onClick={handleLike}
+                            onClick={handleLikeClick}
                             className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-colors pointer-events-auto ${isLiked ? 'bg-amber-500 text-white border border-transparent' : 'bg-black/50 backdrop-blur-md text-white hover:text-amber-500 border border-white/10'}`}
                         >
                             <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.8} className={isLiked ? "animate-heart-bounce" : ""} />
@@ -158,10 +182,24 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                     {product.images.length > 1 && (
                         <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
                             {product.images.map((_, i) => (
-                                <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === activeIndex ? 'bg-white shadow-[0_0_2px_rgba(0,0,0,0.5)]' : 'bg-white/40 shadow-[0_0_2px_rgba(0,0,0,0.3)]'}`} />
+                                <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === activeIndex ? 'w-4 bg-white shadow-[0_0_2px_rgba(0,0,0,0.5)]' : 'w-1.5 bg-white/40 shadow-[0_0_2px_rgba(0,0,0,0.3)]'}`} />
                             ))}
                         </div>
                     )}
+
+                    {/* Double Tap Heart Overlay */}
+                    <AnimatePresence>
+                        {showHeartOverlay && (
+                            <motion.div
+                                initial={{ scale: 0.5, opacity: 0 }}
+                                animate={{ scale: [0.5, 1.3, 1], opacity: [0, 1, 0] }}
+                                transition={{ duration: 0.8, ease: "easeOut" }}
+                                className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
+                            >
+                                <Heart size={100} fill="white" className="text-white drop-shadow-2xl" />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             )}
 
@@ -177,14 +215,14 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                 {/* Text Content */}
                 <div className="text-[15px] text-gray-200 leading-snug break-words mb-4">
                     <h2 className="font-bold text-[22px] sm:text-[24px] tracking-tight leading-tight mb-2.5 text-white">{product.title}</h2>
-                    <p className="whitespace-pre-line text-gray-400 leading-relaxed text-[16px]">{product.description}</p>
+                    <p className="whitespace-pre-line text-gray-300 leading-relaxed text-[15px]">{product.description}</p>
                 </div>
 
                 {/* Interaction Bar & Meta */}
                 <div className="flex flex-wrap items-center justify-between text-gray-400 mt-2" onClick={handleActionClick}>
 
                     <div className="flex items-center gap-6 sm:gap-8">
-                        <button onClick={handleLike} className={`flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${isLiked ? 'text-amber-500' : 'text-gray-400 hover:text-amber-500'}`}>
+                        <button onClick={handleLikeClick} className={`flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${isLiked ? 'text-amber-500' : 'text-gray-400 hover:text-amber-500'}`}>
                             <Heart size={16} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.5} />
                             {formatCount(likesCount)}
                         </button>
@@ -207,7 +245,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-2 text-[13px] text-gray-500 font-medium whitespace-nowrap">
+                    <div className="flex items-center gap-2 text-[13px] text-gray-400 font-medium whitespace-nowrap">
                         <span>{formatRelativeTime(product.createdAt)}</span>
                     </div>
 

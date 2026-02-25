@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ArrowLeft, MoreHorizontal, Info, Mail } from 'lucide-react';
 import { Product, SiteSettings } from '../types';
 import { Post } from './Post';
+import { PostSkeleton } from './PostSkeleton';
 import { AboutModal } from './AboutModal';
 import { ContactModal } from './ContactModal';
 
@@ -21,6 +22,7 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   const [showAbout, setShowAbout] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [targetProductId, setTargetProductId] = useState<string | null>(null);
+  const [activeCategory, setActiveCategory] = useState('全部');
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -48,10 +50,19 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   // Handle loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-white/10 border-t-white rounded-full animate-spin" />
-          <p className="text-gray-400 text-sm font-medium">加载中...</p>
+      <div className="min-h-screen bg-black flex flex-col font-sans tracking-tight">
+        <header
+          className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-4 h-16"
+          style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
+        />
+        <div className="flex-1 pb-20 max-w-7xl mx-auto w-full px-0 sm:px-6 lg:px-8 mt-4" style={{ paddingTop: 'calc(4.5rem + env(safe-area-inset-top, 0px))' }}>
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="break-inside-avoid">
+                <PostSkeleton />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -79,6 +90,10 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   // Sort by admin-defined order (sort_order ascending)
   let displayProducts = [...products].sort((a, b) => a.sort_order - b.sort_order);
 
+  if (activeCategory !== '全部') {
+    displayProducts = displayProducts.filter(p => p.tag === activeCategory);
+  }
+
   if (targetProductId) {
     const target = displayProducts.find(p => p.id === targetProductId);
     if (target) {
@@ -86,87 +101,109 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
     }
   }
 
+  const categories = ['全部', ...Array.from(new Set(products.map(p => p.tag).filter((tag): tag is string => !!tag)))];
+
   return (
-    <div className="min-h-screen bg-black flex justify-center font-sans tracking-tight">
+    <div className="min-h-screen bg-black flex justify-center font-sans tracking-tight text-white">
 
       {/* Main Timeline Column */}
-      <main className="w-full md:max-w-2xl border-x border-white/5 min-h-screen flex flex-col relative sm:shadow-none">
+      <main className="w-full min-h-screen flex flex-col relative bg-black">
 
         {/* Fixed Header */}
         <header
-          className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-3 flex items-center justify-between cursor-pointer md:left-1/2 md:-translate-x-1/2 md:max-w-2xl md:border-x"
+          className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 pt-3 flex flex-col cursor-pointer transition-all duration-300"
           style={{
-            paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
-            paddingLeft: 'max(1.5rem, env(safe-area-inset-left))',
-            paddingRight: 'max(1.5rem, env(safe-area-inset-right))'
+            paddingTop: 'max(0.75rem, env(safe-area-inset-top))'
           }}
           onClick={() => {
             if (targetProductId) window.location.href = window.location.pathname;
           }}
         >
-          <div className="flex items-center gap-3">
-            {targetProductId && (
+          {/* Top Row: Brand & Menu */}
+          <div className="flex items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+            <div className="flex items-center gap-3">
+              {targetProductId && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); window.location.href = window.location.pathname; }}
+                  className="p-1.5 -ml-1 rounded-full hover:bg-white/10 text-gray-300 transition-colors"
+                  title="查看所有产品"
+                >
+                  <ArrowLeft size={20} className="text-white" />
+                </button>
+              )}
+              <div className="flex flex-col">
+                <h1 className="text-[20px] font-bold text-white tracking-tight">先越科技</h1>
+                <p className="text-[13px] text-gray-400">核心技术驱动，助力电子产品快速落地。</p>
+              </div>
+            </div>
+            <div className="relative">
               <button
-                onClick={(e) => { e.stopPropagation(); window.location.href = window.location.pathname; }}
-                className="p-1.5 -ml-1 rounded-full hover:bg-white/10 text-gray-300 transition-colors"
-                title="查看所有产品"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-white"
               >
-                <ArrowLeft size={20} className="text-white" />
+                <MoreHorizontal size={20} />
               </button>
-            )}
-            <div className="flex flex-col">
-              <h1 className="text-[20px] font-bold text-white tracking-tight">先越科技</h1>
-              <p className="text-[13px] text-gray-400">核心技术驱动，助力电子产品快速落地。</p>
+
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <>
+                    {/* Invisible backdrop to close menu when clicking outside */}
+                    <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      className="absolute right-0 top-10 w-48 bg-[#1a1a1a] rounded-xl shadow-2xl border border-white/10 overflow-hidden py-1 z-50 origin-top-right"
+                    >
+                      <button
+                        onClick={() => { setShowAbout(true); setIsMenuOpen(false); }}
+                        className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center space-x-3 transition-colors text-[15px] text-gray-200"
+                      >
+                        <Info size={18} />
+                        <span>关于</span>
+                      </button>
+                      <button
+                        onClick={() => { setShowContact(true); setIsMenuOpen(false); }}
+                        className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center space-x-3 transition-colors text-[15px] text-gray-200"
+                      >
+                        <Mail size={18} />
+                        <span>联系</span>
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
             </div>
           </div>
-          <div className="relative">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-white"
-            >
-              <MoreHorizontal size={20} />
-            </button>
 
-            <AnimatePresence>
-              {isMenuOpen && (
-                <>
-                  {/* Invisible backdrop to close menu when clicking outside */}
-                  <div className="fixed inset-0 z-40" onClick={() => setIsMenuOpen(false)} />
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="absolute right-0 top-10 w-48 bg-[#1a1a1a] rounded-xl shadow-2xl border border-white/10 overflow-hidden py-1 z-50 origin-top-right"
-                  >
-                    <button
-                      onClick={() => { setShowAbout(true); setIsMenuOpen(false); }}
-                      className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center space-x-3 transition-colors text-[15px] text-gray-200"
-                    >
-                      <Info size={18} />
-                      <span>关于</span>
-                    </button>
-                    <button
-                      onClick={() => { setShowContact(true); setIsMenuOpen(false); }}
-                      className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center space-x-3 transition-colors text-[15px] text-gray-200"
-                    >
-                      <Mail size={18} />
-                      <span>联系</span>
-                    </button>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
+          {/* Bottom Row: Category Scroller */}
+          {!targetProductId && categories.length > 1 && (
+            <div className="w-full overflow-x-auto hide-scrollbar mt-3 pb-2 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex items-center gap-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={(e) => { e.stopPropagation(); window.scrollTo({ top: 0, behavior: 'smooth' }); setActiveCategory(cat); }}
+                  className={`px-4 py-1.5 rounded-full text-[14px] border font-medium transition-colors whitespace-nowrap ${activeCategory === cat ? 'bg-white text-black border-transparent' : 'bg-transparent text-gray-400 border-white/20 hover:text-white hover:border-white/40'}`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
         </header>
 
-        {/* Feed Posts (with top padding for fixed header + safe area) */}
-        <div className="flex-1 pb-20" style={{ paddingTop: 'calc(4rem + env(safe-area-inset-top, 0px))' }}>
-          {displayProducts.map(product => (
-            <Post
-              key={product.id}
-              product={product}
-            />
-          ))}
+        {/* Feed Posts */}
+        <div
+          className="flex-1 pb-20 max-w-7xl mx-auto w-full px-0 sm:px-6 lg:px-8 mt-2"
+          style={{ paddingTop: !targetProductId && categories.length > 1 ? 'calc(7.5rem + env(safe-area-inset-top, 0px))' : 'calc(4.5rem + env(safe-area-inset-top, 0px))' }}
+        >
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
+            {displayProducts.map(product => (
+              <div key={product.id} className="break-inside-avoid">
+                <Post product={product} />
+              </div>
+            ))}
+          </div>
 
           {/* Infinite Scroll Sentinel */}
           {!targetProductId && (
