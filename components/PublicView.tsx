@@ -11,7 +11,6 @@ interface PublicViewProps {
 }
 
 export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onBackToAdmin }) => {
-  const [lightboxData, setLightboxData] = useState<{ images: string[], currentIndex: number } | null>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showContact, setShowContact] = useState(false);
@@ -138,7 +137,6 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onB
             <Post
               key={product.id}
               product={product}
-              onImageClick={(images, index) => setLightboxData({ images, currentIndex: index })}
             />
           ))}
         </div>
@@ -224,67 +222,6 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onB
         )}
       </AnimatePresence>
 
-      {/* Lightbox / Zoomed Image Overlay */}
-      <AnimatePresence>
-        {lightboxData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-
-            {/* Dark Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="absolute inset-0 bg-black/95 cursor-pointer pointer-events-auto"
-              onClick={() => setLightboxData(null)}
-            />
-
-            <div className="relative w-full h-full flex flex-col items-center justify-center overflow-hidden pointer-events-none select-none p-4">
-              <AnimatePresence mode="wait">
-                <motion.img
-                  src={lightboxData.images[lightboxData.currentIndex]}
-                  alt="Zoomed product"
-                  className="max-w-full max-h-[85vh] object-contain shadow-2xl pointer-events-auto cursor-grab active:cursor-grabbing rounded-xl z-50"
-                  drag
-                  dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-                  dragElastic={1}
-                  onDragEnd={(_, { offset }) => {
-                    const swipeX = offset.x;
-                    const swipeY = offset.y;
-
-                    // Close on vertical swipe (up or down)
-                    if (Math.abs(swipeY) > 80) {
-                      setLightboxData(null);
-                      return;
-                    }
-
-                    // Process horizontal swipe for next/prev
-                    if (swipeX < -50 && lightboxData.currentIndex < lightboxData.images.length - 1) {
-                      setLightboxData({ ...lightboxData, currentIndex: lightboxData.currentIndex + 1 });
-                    } else if (swipeX > 50 && lightboxData.currentIndex > 0) {
-                      setLightboxData({ ...lightboxData, currentIndex: lightboxData.currentIndex - 1 });
-                    }
-                  }}
-                  onClick={() => setLightboxData(null)}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-              </AnimatePresence>
-
-              {/* Pagination Dots */}
-              {lightboxData.images.length > 1 && (
-                <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-50 pointer-events-none">
-                  {lightboxData.images.map((_, i) => (
-                    <div key={i} className={`w-1.5 h-1.5 rounded-full transition-colors ${i === lightboxData.currentIndex ? 'bg-white' : 'bg-white/30'}`} />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-      </AnimatePresence>
 
     </div >
   );
