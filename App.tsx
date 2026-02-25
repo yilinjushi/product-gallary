@@ -85,7 +85,7 @@ const App: React.FC = () => {
     };
 
     fetchSettings();
-    fetchProducts();
+    // fetchProducts is now called in the appMode useEffect below
 
     return () => subscription.unsubscribe();
   }, []);
@@ -99,14 +99,19 @@ const App: React.FC = () => {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (mode: 'admin' | 'public' = appMode) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('products')
         .select('*')
-        .order('created_at', { ascending: false })
-        .range(0, PAGE_SIZE - 1);
+        .order('created_at', { ascending: false });
+
+      if (mode === 'public') {
+        query = query.range(0, PAGE_SIZE - 1);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -118,13 +123,18 @@ const App: React.FC = () => {
       }));
 
       setProducts(formattedData);
-      setHasMore((data || []).length >= PAGE_SIZE);
+      setHasMore(mode === 'public' ? (data || []).length >= PAGE_SIZE : false);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Fetch products whenever the app mode changes
+  useEffect(() => {
+    fetchProducts(appMode);
+  }, [appMode]);
 
   const loadMoreProducts = async () => {
     if (isLoadingMore || !hasMore) return;
