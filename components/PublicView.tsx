@@ -48,9 +48,9 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   // Handle loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-4 border-gray-100 border-t-black rounded-full animate-spin" />
+          <div className="w-10 h-10 border-4 border-white/10 border-t-white rounded-full animate-spin" />
           <p className="text-gray-400 text-sm font-medium">加载中...</p>
         </div>
       </div>
@@ -60,15 +60,15 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   // Handle empty state
   if (products.length === 0) {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8">
-        <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-          <ShoppingBag size={24} className="text-gray-300" />
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-8">
+        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6">
+          <ShoppingBag size={24} className="text-gray-600" />
         </div>
-        <h2 className="text-xl font-bold text-gray-900 mb-2">No Posts Yet</h2>
-        <p className="text-gray-500 mb-6 text-center text-[15px]">When products are added to the inventory, they will appear here.</p>
+        <h2 className="text-xl font-bold text-white mb-2">No Posts Yet</h2>
+        <p className="text-gray-400 mb-6 text-center text-[15px]">When products are added to the inventory, they will appear here.</p>
         <button
           onClick={onBackToAdmin}
-          className="bg-black text-white px-6 py-2 rounded-full font-bold text-[15px] hover:bg-gray-800 transition-colors"
+          className="bg-white text-black px-6 py-2 rounded-full font-bold text-[15px] hover:bg-gray-200 transition-colors"
         >
           Sign in to Admin
         </button>
@@ -87,14 +87,14 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   }
 
   return (
-    <div className="min-h-screen bg-white flex justify-center font-sans tracking-tight">
+    <div className="min-h-screen bg-black flex justify-center font-sans tracking-tight">
 
       {/* Main Timeline Column */}
-      <main className="w-full md:max-w-2xl border-x border-gray-100/60 min-h-screen flex flex-col relative sm:shadow-[0_0_15px_rgba(0,0,0,0.02)]">
+      <main className="w-full md:max-w-2xl border-x border-white/5 min-h-screen flex flex-col relative sm:shadow-none">
 
         {/* Sticky Header */}
         <header
-          className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100/60 py-3 px-4 flex items-center justify-between cursor-pointer"
+          className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-3 px-4 flex items-center justify-between cursor-pointer"
           style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
           onClick={() => {
             if (targetProductId) window.location.href = window.location.pathname;
@@ -104,21 +104,21 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
             {targetProductId && (
               <button
                 onClick={(e) => { e.stopPropagation(); window.location.href = window.location.pathname; }}
-                className="p-1.5 -ml-1 rounded-full hover:bg-gray-100 text-gray-700 transition-colors"
+                className="p-1.5 -ml-1 rounded-full hover:bg-white/10 text-gray-300 transition-colors"
                 title="查看所有产品"
               >
-                <ArrowLeft size={20} className="text-gray-900" />
+                <ArrowLeft size={20} className="text-white" />
               </button>
             )}
             <div className="flex flex-col">
-              <h1 className="text-[20px] font-bold text-gray-900 tracking-tight">先越科技</h1>
-              <p className="text-[13px] text-gray-500">核心技术驱动，助力电子产品快速落地。</p>
+              <h1 className="text-[20px] font-bold text-white tracking-tight">先越科技</h1>
+              <p className="text-[13px] text-gray-400">核心技术驱动，助力电子产品快速落地。</p>
             </div>
           </div>
           <div className="relative">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-1.5 rounded-full hover:bg-gray-100 transition-colors text-gray-900"
+              className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-white"
             >
               <MoreHorizontal size={20} />
             </button>
@@ -132,18 +132,18 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
-                    className="absolute right-0 top-10 w-48 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden py-1 z-50 origin-top-right"
+                    className="absolute right-0 top-10 w-48 bg-[#1a1a1a] rounded-xl shadow-2xl border border-white/10 overflow-hidden py-1 z-50 origin-top-right"
                   >
                     <button
                       onClick={() => { setShowAbout(true); setIsMenuOpen(false); }}
-                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-[15px] text-gray-700"
+                      className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center space-x-3 transition-colors text-[15px] text-gray-200"
                     >
                       <Info size={18} />
                       <span>关于</span>
                     </button>
                     <button
                       onClick={() => { setShowContact(true); setIsMenuOpen(false); }}
-                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 flex items-center space-x-3 transition-colors text-[15px] text-gray-700"
+                      className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center space-x-3 transition-colors text-[15px] text-gray-200"
                     >
                       <Mail size={18} />
                       <span>联系</span>
@@ -168,10 +168,10 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
           {!targetProductId && (
             <div ref={sentinelRef} className="flex justify-center py-8">
               {isLoadingMore && (
-                <div className="w-8 h-8 border-4 border-gray-100 border-t-black rounded-full animate-spin" />
+                <div className="w-8 h-8 border-4 border-white/10 border-t-white rounded-full animate-spin" />
               )}
               {!hasMore && products.length > 0 && (
-                <p className="text-gray-300 text-sm">已显示全部产品</p>
+                <p className="text-gray-500 text-sm">已显示全部产品</p>
               )}
             </div>
           )}
