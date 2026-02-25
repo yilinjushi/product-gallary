@@ -107,6 +107,25 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                         ))}
                     </div>
 
+                    {/* Tag Badge - Top Left */}
+                    {product.tag && (
+                        <div className="absolute top-3 left-3 z-10">
+                            <span className="bg-white/90 backdrop-blur-sm text-gray-800 text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wide">
+                                {product.tag}
+                            </span>
+                        </div>
+                    )}
+
+                    {/* Like Button - Top Right */}
+                    <div className="absolute top-3 right-3 z-10">
+                        <button
+                            onClick={handleLike}
+                            className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-colors pointer-events-auto ${isLiked ? 'bg-pink-500 text-white' : 'bg-white/90 backdrop-blur-sm text-gray-600 hover:text-pink-600'}`}
+                        >
+                            <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.8} className={isLiked ? "animate-heart-bounce" : ""} />
+                        </button>
+                    </div>
+
                     {/* Pagination Dots */}
                     {product.images.length > 1 && (
                         <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
@@ -131,15 +150,10 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                 <div className="flex flex-wrap items-center justify-between text-gray-500 mt-2" onClick={handleActionClick}>
 
                     <div className="flex items-center gap-6 sm:gap-8">
-                        <button
-                            onClick={handleLike}
-                            className={`flex items-center gap-2 group p-0 transition-colors ${isLiked ? 'text-pink-600' : 'hover:text-pink-600'}`}
-                        >
-                            <div className="p-2 rounded-full group-hover:bg-pink-50 transition-colors -ml-2">
-                                <Heart size={20} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.5} className={isLiked ? "animate-heart-bounce" : ""} />
-                            </div>
-                            <span className="text-[14px] font-medium">{formatCount(likesCount)}</span>
-                        </button>
+                        <span className={`flex items-center gap-1.5 text-[14px] font-medium ${isLiked ? 'text-pink-600' : 'text-gray-500'}`}>
+                            <Heart size={16} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.5} />
+                            {formatCount(likesCount)}
+                        </span>
 
                         <button className="flex items-center gap-2 group p-0 transition-colors hover:text-blue-500">
                             <div className="p-2 rounded-full group-hover:bg-blue-50 transition-colors -ml-2 cursor-default">
@@ -160,11 +174,6 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                     </div>
 
                     <div className="flex items-center gap-2 text-[13px] text-gray-400 font-medium whitespace-nowrap">
-                        {product.tag && (
-                            <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded uppercase tracking-wide">
-                                {product.tag}
-                            </span>
-                        )}
                         <span>{formatRelativeTime(product.createdAt)}</span>
                     </div>
 
