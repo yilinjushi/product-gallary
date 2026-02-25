@@ -92,9 +92,9 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
       {/* Main Timeline Column */}
       <main className="w-full md:max-w-2xl border-x border-white/5 min-h-screen flex flex-col relative sm:shadow-none">
 
-        {/* Sticky Header */}
+        {/* Fixed Header */}
         <header
-          className="sticky top-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-3 flex items-center justify-between cursor-pointer"
+          className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-3 flex items-center justify-between cursor-pointer md:left-1/2 md:-translate-x-1/2 md:max-w-2xl md:border-x"
           style={{
             paddingTop: 'max(0.75rem, env(safe-area-inset-top))',
             paddingLeft: 'max(1.5rem, env(safe-area-inset-left))',
@@ -159,8 +159,8 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
           </div>
         </header>
 
-        {/* Feed Posts */}
-        <div className="flex-1 pb-20">
+        {/* Feed Posts (with top padding for fixed header) */}
+        <div className="flex-1 pb-20 pt-16">
           {displayProducts.map(product => (
             <Post
               key={product.id}
