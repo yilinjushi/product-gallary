@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, ArrowLeft, MoreHorizontal, X, Info, Mail } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, MoreHorizontal, Info, Mail } from 'lucide-react';
 import { Product, SiteSettings } from '../types';
 import { Post } from './Post';
+import { AboutModal } from './AboutModal';
+import { ContactModal } from './ContactModal';
 
 interface PublicViewProps {
   products: Product[];
@@ -180,72 +182,20 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
       {/* --- About Modal --- */}
       <AnimatePresence>
         {showAbout && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowAbout(false)}
-              className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl"
-            >
-              <button
-                onClick={() => setShowAbout(false)}
-                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X size={20} />
-              </button>
-
-              <div className="mb-6">
-                <span className="text-sm font-bold tracking-widest uppercase border-b border-black pb-1">关于我们</span>
-              </div>
-
-              <p className="text-gray-500 leading-relaxed text-[15px] mb-6 whitespace-pre-wrap">
-                {settings?.about_text || '暂无关于信息。'}
-              </p>
-            </motion.div>
-          </div>
+          <AboutModal
+            onClose={() => setShowAbout(false)}
+            text={settings?.about_text || '暂无关于信息。'}
+          />
         )}
       </AnimatePresence>
 
       {/* --- Contact Modal --- */}
       <AnimatePresence>
         {showContact && (
-          <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowContact(false)}
-              className="absolute inset-0 bg-black/20 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="relative bg-white w-full max-w-md p-8 rounded-3xl shadow-2xl"
-            >
-              <button
-                onClick={() => setShowContact(false)}
-                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <X size={20} />
-              </button>
-
-              <div className="mb-6">
-                <span className="text-sm font-bold tracking-widest uppercase border-b border-black pb-1">联系我们</span>
-              </div>
-
-              <p className="text-gray-500 leading-relaxed text-[15px] mb-2 whitespace-pre-wrap">
-                {settings?.contact_text || '暂无联系信息。'}
-              </p>
-            </motion.div>
-          </div>
+          <ContactModal
+            onClose={() => setShowContact(false)}
+            text={settings?.contact_text || '暂无联系信息。'}
+          />
         )}
       </AnimatePresence>
 
