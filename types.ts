@@ -18,6 +18,7 @@ export interface ProductFormData {
   views: number;
 }
 
+export type ViewType = 'list' | 'create' | 'edit';
 
 export type ViewState =
   | { type: 'list' }
