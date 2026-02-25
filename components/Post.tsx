@@ -178,10 +178,10 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                 <div className="flex flex-wrap items-center justify-between text-gray-500 mt-2" onClick={handleActionClick}>
 
                     <div className="flex items-center gap-6 sm:gap-8">
-                        <span className={`flex items-center gap-1.5 text-[14px] font-medium ${isLiked ? 'text-pink-600' : 'text-gray-500'}`}>
+                        <button onClick={handleLike} className={`flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${isLiked ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
                             <Heart size={16} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.5} />
                             {formatCount(likesCount)}
-                        </span>
+                        </button>
 
                         <button className="flex items-center gap-2 group p-0 transition-colors hover:text-blue-500">
                             <div className="p-2 rounded-full group-hover:bg-blue-50 transition-colors -ml-2 cursor-default">
