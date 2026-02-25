@@ -7,13 +7,16 @@
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
@@ -22,13 +25,15 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-/* Prevent horizontal overflow on mobile browsers */
-html, body {
-  overflow-x: hidden;
-  width: 100vw;
+/* Prevent horizontal overflow on mobile browsers without breaking sticky */
+html,
+body {
+  overflow-x: clip;
+  width: 100%;
 }
