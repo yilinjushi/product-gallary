@@ -169,8 +169,8 @@ export const Post: React.FC<PostProps> = ({ product }) => {
             <div
                 className="min-w-0"
                 style={{
-                    paddingLeft: 'max(1.25rem, env(safe-area-inset-left))',
-                    paddingRight: 'max(1.25rem, env(safe-area-inset-right))'
+                    paddingLeft: 'max(1.5rem, env(safe-area-inset-left))',
+                    paddingRight: 'max(1.5rem, env(safe-area-inset-right))'
                 }}
             >
 
