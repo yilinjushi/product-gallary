@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Heart, Share, BarChart2 } from 'lucide-react';
+import { Heart, Share, BarChart2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Product } from '../types';
 import { formatRelativeTime } from '../utils/dateUtils';
 import { supabase } from '../utils/supabaseClient';
@@ -83,12 +83,18 @@ export const Post: React.FC<PostProps> = ({ product }) => {
         }
     };
 
+    const scrollToIndex = (index: number) => {
+        if (!scrollRef.current) return;
+        const clamped = Math.max(0, Math.min(index, product.images.length - 1));
+        scrollRef.current.scrollTo({ left: clamped * scrollRef.current.clientWidth, behavior: 'smooth' });
+    };
+
     return (
         <article className="py-6 border-b border-gray-100/60 bg-white hover:bg-gray-50/30 transition-colors cursor-default block">
 
             {/* Media Attachments (Full Width Area) */}
             {product.images && product.images.length > 0 && (
-                <div className="relative w-full aspect-video bg-gray-100 overflow-hidden mb-5 sm:rounded-2xl mx-0 sm:mx-4 sm:w-[calc(100%-2rem)]">
+                <div className="group/carousel relative w-full aspect-video bg-gray-100 overflow-hidden mb-5 sm:rounded-2xl mx-0 sm:mx-4 sm:w-[calc(100%-2rem)]">
                     <div
                         ref={scrollRef}
                         onScroll={handleScroll}
@@ -125,6 +131,28 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                             <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.8} className={isLiked ? "animate-heart-bounce" : ""} />
                         </button>
                     </div>
+
+                    {/* Desktop Arrow Buttons */}
+                    {product.images.length > 1 && (
+                        <>
+                            {activeIndex > 0 && (
+                                <button
+                                    onClick={() => scrollToIndex(activeIndex - 1)}
+                                    className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm shadow items-center justify-center text-gray-700 hover:bg-white transition-all opacity-0 group-hover/carousel:opacity-100 pointer-events-auto"
+                                >
+                                    <ChevronLeft size={18} />
+                                </button>
+                            )}
+                            {activeIndex < product.images.length - 1 && (
+                                <button
+                                    onClick={() => scrollToIndex(activeIndex + 1)}
+                                    className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white/80 backdrop-blur-sm shadow items-center justify-center text-gray-700 hover:bg-white transition-all opacity-0 group-hover/carousel:opacity-100 pointer-events-auto"
+                                >
+                                    <ChevronRight size={18} />
+                                </button>
+                            )}
+                        </>
+                    )}
 
                     {/* Pagination Dots */}
                     {product.images.length > 1 && (
