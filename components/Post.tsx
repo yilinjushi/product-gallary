@@ -55,10 +55,6 @@ export const Post: React.FC<PostProps> = ({ product }) => {
         }
     };
 
-    const handleActionClick = () => {
-        // Events are stopped individually by child buttons
-    };
-
     const handleShare = (e: React.MouseEvent) => {
         e.stopPropagation();
         const url = `${window.location.origin}${window.location.pathname}?product=${product.id}`;
@@ -99,7 +95,6 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                         ref={scrollRef}
                         onScroll={handleScroll}
                         className="flex overflow-x-auto snap-x snap-mandatory w-full h-full hide-scrollbar"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
                         {product.images.map((img, idx) => (
                             <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative bg-gray-100">
@@ -175,7 +170,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                 </div>
 
                 {/* Interaction Bar & Meta */}
-                <div className="flex flex-wrap items-center justify-between text-gray-500 mt-2" onClick={handleActionClick}>
+                <div className="flex flex-wrap items-center justify-between text-gray-500 mt-2">
 
                     <div className="flex items-center gap-6 sm:gap-8">
                         <button onClick={handleLike} className={`flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${isLiked ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
