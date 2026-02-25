@@ -18,6 +18,8 @@ import { Product, ViewState, ProductFormData } from './types';
 import { SidebarItem } from './components/SidebarItem';
 import { supabase, isConfigured } from './utils/supabaseClient';
 
+const PAGE_SIZE = 5;
+
 const App: React.FC = () => {
   // --- State ---
   const [products, setProducts] = useState<Product[]>([]);
@@ -28,6 +30,8 @@ const App: React.FC = () => {
   );
   const [session, setSession] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // --- Effects ---
 
@@ -86,7 +90,8 @@ const App: React.FC = () => {
       const { data, error } = await supabase
         .from('products')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(0, PAGE_SIZE - 1);
 
       if (error) throw error;
 
@@ -98,10 +103,41 @@ const App: React.FC = () => {
       }));
 
       setProducts(formattedData);
+      setHasMore((data || []).length >= PAGE_SIZE);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadMoreProducts = async () => {
+    if (isLoadingMore || !hasMore) return;
+    setIsLoadingMore(true);
+    try {
+      const from = products.length;
+      const to = from + PAGE_SIZE - 1;
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(from, to);
+
+      if (error) throw error;
+
+      const formattedData: Product[] = (data || []).map(item => ({
+        ...item,
+        fav: item.fav || 300,
+        views: item.views || 3000,
+        createdAt: new Date(item.created_at).getTime()
+      }));
+
+      setProducts(prev => [...prev, ...formattedData]);
+      setHasMore((data || []).length >= PAGE_SIZE);
+    } catch (error) {
+      console.error('Error loading more products:', error);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -193,6 +229,9 @@ const App: React.FC = () => {
       <PublicView
         products={products}
         isLoading={isLoading}
+        hasMore={hasMore}
+        isLoadingMore={isLoadingMore}
+        onLoadMore={loadMoreProducts}
         onBackToAdmin={goToAdmin}
       />
     );

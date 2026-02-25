@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ArrowLeft, MoreHorizontal, X, Info, Mail } from 'lucide-react';
 import { Product } from '../types';
@@ -7,20 +7,40 @@ import { Post } from './Post';
 interface PublicViewProps {
   products: Product[];
   isLoading?: boolean;
+  hasMore?: boolean;
+  isLoadingMore?: boolean;
+  onLoadMore?: () => void;
   onBackToAdmin: () => void;
 }
 
-export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onBackToAdmin }) => {
+export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, hasMore, isLoadingMore, onLoadMore, onBackToAdmin }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showContact, setShowContact] = useState(false);
   const [targetProductId, setTargetProductId] = useState<string | null>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const pid = params.get('product');
     if (pid) setTargetProductId(pid);
   }, []);
+
+  // IntersectionObserver for infinite scroll
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const target = entries[0];
+    if (target.isIntersecting && hasMore && !isLoadingMore && !targetProductId && onLoadMore) {
+      onLoadMore();
+    }
+  }, [hasMore, isLoadingMore, targetProductId, onLoadMore]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(handleObserver, { rootMargin: '200px' });
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [handleObserver]);
 
   // Handle loading state
   if (isLoading) {
@@ -139,6 +159,18 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, onB
               product={product}
             />
           ))}
+
+          {/* Infinite Scroll Sentinel */}
+          {!targetProductId && (
+            <div ref={sentinelRef} className="flex justify-center py-8">
+              {isLoadingMore && (
+                <div className="w-8 h-8 border-4 border-gray-100 border-t-black rounded-full animate-spin" />
+              )}
+              {!hasMore && products.length > 0 && (
+                <p className="text-gray-300 text-sm">已显示全部产品</p>
+              )}
+            </div>
+          )}
         </div>
 
       </main>
