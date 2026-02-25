@@ -4,6 +4,7 @@ import { Product } from '../types';
 import { formatRelativeTime } from '../utils/dateUtils';
 import { supabase } from '../utils/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
+import { MagneticButton } from './MagneticButton';
 
 interface PostProps {
     product: Product;
@@ -161,7 +162,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                         <>
                             {activeIndex > 0 && (
                                 <button
-                                    onClick={() => scrollToIndex(activeIndex - 1)}
+                                    onClick={(e) => { e.stopPropagation(); scrollToIndex(activeIndex - 1); }}
                                     className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/10 shadow items-center justify-center text-white hover:bg-black/80 transition-all opacity-0 group-hover/carousel:opacity-100 pointer-events-auto"
                                 >
                                     <ChevronLeft size={18} />
@@ -169,7 +170,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                             )}
                             {activeIndex < product.images.length - 1 && (
                                 <button
-                                    onClick={() => scrollToIndex(activeIndex + 1)}
+                                    onClick={(e) => { e.stopPropagation(); scrollToIndex(activeIndex + 1); }}
                                     className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/10 shadow items-center justify-center text-white hover:bg-black/80 transition-all opacity-0 group-hover/carousel:opacity-100 pointer-events-auto"
                                 >
                                     <ChevronRight size={18} />
@@ -178,11 +179,23 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                         </>
                     )}
 
-                    {/* Pagination Dots */}
+                    {/* Story-style Progress Line */}
                     {product.images.length > 1 && (
-                        <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10 pointer-events-none">
+                        <div className="absolute bottom-3 left-3 right-3 flex gap-1 z-10 pointer-events-none">
                             {product.images.map((_, i) => (
-                                <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i === activeIndex ? 'w-4 bg-white shadow-[0_0_2px_rgba(0,0,0,0.5)]' : 'w-1.5 bg-white/40 shadow-[0_0_2px_rgba(0,0,0,0.3)]'}`} />
+                                <div key={i} className="h-[2px] rounded-full overflow-hidden flex-1 bg-white/20 select-none shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
+                                    {i === activeIndex && (
+                                        <motion.div
+                                            className="h-full bg-white w-full shadow-sm"
+                                            initial={{ scaleX: 0, originX: 0 }}
+                                            animate={{ scaleX: 1 }}
+                                            transition={{ duration: 0.2, ease: "easeOut" }}
+                                        />
+                                    )}
+                                    {i < activeIndex && (
+                                        <div className="h-full bg-white w-full" />
+                                    )}
+                                </div>
                             ))}
                         </div>
                     )}
@@ -191,12 +204,21 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                     <AnimatePresence>
                         {showHeartOverlay && (
                             <motion.div
-                                initial={{ scale: 0.5, opacity: 0 }}
-                                animate={{ scale: [0.5, 1.3, 1], opacity: [0, 1, 0] }}
-                                transition={{ duration: 0.8, ease: "easeOut" }}
+                                initial={{ scale: 0.5, opacity: 0, y: 0, rotate: 0 }}
+                                animate={{
+                                    scale: [0.5, 1.4, 1.1],
+                                    opacity: [0, 1, 0],
+                                    y: [0, -10, -30],
+                                    rotate: [-10, 15, -5]
+                                }}
+                                transition={{
+                                    duration: 0.9,
+                                    times: [0, 0.4, 1],
+                                    ease: ["easeOut", "easeInOut"]
+                                }}
                                 className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none"
                             >
-                                <Heart size={100} fill="white" className="text-white drop-shadow-2xl" />
+                                <Heart size={100} fill="white" className="text-white drop-shadow-[0_10px_35px_rgba(255,255,255,0.4)]" />
                             </motion.div>
                         )}
                     </AnimatePresence>
@@ -221,28 +243,31 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                 {/* Interaction Bar & Meta */}
                 <div className="flex flex-wrap items-center justify-between text-gray-400 mt-2" onClick={handleActionClick}>
 
-                    <div className="flex items-center gap-6 sm:gap-8">
-                        <button onClick={handleLikeClick} className={`flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${isLiked ? 'text-amber-500' : 'text-gray-400 hover:text-amber-500'}`}>
+                    <div className="flex items-center gap-5 sm:gap-7">
+                        <MagneticButton onClick={handleLikeClick} intensity={0.4} className={`flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${isLiked ? 'text-amber-500' : 'text-gray-400 hover:text-white'}`}>
                             <Heart size={16} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.5} />
                             {formatCount(likesCount)}
-                        </button>
+                        </MagneticButton>
 
-                        <div className="flex items-center gap-2 text-gray-400 p-0 cursor-default">
+                        <MagneticButton intensity={0.2} className="flex items-center gap-2 text-gray-400 p-0 cursor-default hover:text-white transition-colors">
                             <div className="p-2 -ml-2">
                                 <BarChart2 size={20} strokeWidth={1.5} />
                             </div>
                             <span className="text-[14px] font-medium">{formatCount(viewsCount)}</span>
-                        </div>
+                        </MagneticButton>
 
-                        <button
-                            onClick={handleShare}
-                            className="flex items-center gap-2 group p-0 transition-colors text-gray-400 hover:text-amber-500"
-                            title="分享链接"
-                        >
-                            <div className="p-2 rounded-full group-hover:bg-white/5 transition-colors -ml-2">
-                                <Share size={18} strokeWidth={1.5} />
-                            </div>
-                        </button>
+                        <div className="relative z-10">
+                            <MagneticButton
+                                onClick={handleShare}
+                                intensity={0.6}
+                                className="flex items-center gap-2 group p-0 transition-colors text-gray-400 hover:text-white"
+                                title="分享链接"
+                            >
+                                <div className="p-2 rounded-full group-hover:bg-white/10 transition-colors -ml-2">
+                                    <Share size={18} strokeWidth={1.5} />
+                                </div>
+                            </MagneticButton>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-2 text-[13px] text-gray-400 font-medium whitespace-nowrap">
