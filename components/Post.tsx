@@ -126,7 +126,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                     <div className="absolute top-3 right-3 z-10">
                         <button
                             onClick={handleLike}
-                            className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-colors pointer-events-auto ${isLiked ? 'bg-pink-600 text-white' : 'bg-black/50 backdrop-blur-md text-white hover:text-pink-500 border border-white/10'}`}
+                            className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-colors pointer-events-auto ${isLiked ? 'bg-amber-500 text-white border border-transparent' : 'bg-black/50 backdrop-blur-md text-white hover:text-amber-500 border border-white/10'}`}
                         >
                             <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.8} className={isLiked ? "animate-heart-bounce" : ""} />
                         </button>
@@ -178,12 +178,12 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                 <div className="flex flex-wrap items-center justify-between text-gray-400 mt-2" onClick={handleActionClick}>
 
                     <div className="flex items-center gap-6 sm:gap-8">
-                        <button onClick={handleLike} className={`flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${isLiked ? 'text-pink-500' : 'text-gray-400 hover:text-pink-400'}`}>
+                        <button onClick={handleLike} className={`flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${isLiked ? 'text-amber-500' : 'text-gray-400 hover:text-amber-500'}`}>
                             <Heart size={16} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.5} />
                             {formatCount(likesCount)}
                         </button>
 
-                        <button className="flex items-center gap-2 group p-0 transition-colors text-gray-400 hover:text-blue-400">
+                        <button className="flex items-center gap-2 group p-0 transition-colors text-gray-400 hover:text-amber-500">
                             <div className="p-2 rounded-full group-hover:bg-white/5 transition-colors -ml-2 cursor-default">
                                 <BarChart2 size={20} strokeWidth={1.5} />
                             </div>
@@ -192,7 +192,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
 
                         <button
                             onClick={handleShare}
-                            className="flex items-center gap-2 group p-0 transition-colors text-gray-400 hover:text-green-400"
+                            className="flex items-center gap-2 group p-0 transition-colors text-gray-400 hover:text-amber-500"
                             title="分享链接"
                         >
                             <div className="p-2 rounded-full group-hover:bg-white/5 transition-colors -ml-2">
