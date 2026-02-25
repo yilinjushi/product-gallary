@@ -18,7 +18,7 @@ import { Product, ViewState, ProductFormData } from './types';
 import { SidebarItem } from './components/SidebarItem';
 import { supabase, isConfigured } from './utils/supabaseClient';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 2;
 
 const App: React.FC = () => {
   // --- State ---

@@ -37,7 +37,7 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
-    const observer = new IntersectionObserver(handleObserver, { rootMargin: '200px' });
+    const observer = new IntersectionObserver(handleObserver, { rootMargin: '100px' });
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [handleObserver]);
