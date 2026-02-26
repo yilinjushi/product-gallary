@@ -1,4 +1,4 @@
-const STATIC_CACHE = 'xianyue-static-v2';
+const STATIC_CACHE = 'xianyue-static-v3';
 const IMAGE_CACHE = 'xianyue-images-v2';
 const IMAGE_CACHE_LIMIT = 200;
 
@@ -36,7 +36,6 @@ async function trimCache(cacheName, maxItems) {
     const cache = await caches.open(cacheName);
     const keys = await cache.keys();
     if (keys.length > maxItems) {
-        // Delete oldest entries (first in = first out)
         const toDelete = keys.slice(0, keys.length - maxItems);
         await Promise.all(toDelete.map((key) => cache.delete(key)));
     }
@@ -51,6 +50,9 @@ self.addEventListener('fetch', (event) => {
 
     const url = new URL(request.url);
 
+    // --- Skip API requests entirely ---
+    if (url.pathname.startsWith('/api/')) return;
+
     // --- Supabase API requests (REST, Auth, RPC) → Network only, never cache ---
     if (url.hostname.includes('supabase') && !url.pathname.includes('/storage/')) {
         return;
@@ -64,17 +66,14 @@ self.addEventListener('fetch', (event) => {
                 if (cached) {
                     return cached;
                 }
-                // Not in cache — fetch from network and cache it
                 try {
                     const response = await fetch(request);
                     if (response.ok) {
                         cache.put(request, response.clone());
-                        // Trim in background
                         trimCache(IMAGE_CACHE, IMAGE_CACHE_LIMIT);
                     }
                     return response;
                 } catch (err) {
-                    // Offline and not cached — return a fallback or error
                     return new Response('', { status: 408, statusText: 'Offline' });
                 }
             })
@@ -82,7 +81,28 @@ self.addEventListener('fetch', (event) => {
         return;
     }
 
-    // --- All other requests (static assets) → Stale-while-revalidate ---
+    // --- HTML navigation requests → Network first, fallback to cache ---
+    // This prevents stale HTML from referencing old JS bundles after a deploy
+    if (request.mode === 'navigate' || request.destination === 'document' ||
+        url.pathname === '/' || url.pathname.endsWith('.html')) {
+        event.respondWith(
+            fetch(request)
+                .then((response) => {
+                    if (response.ok) {
+                        const clone = response.clone();
+                        caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
+                    }
+                    return response;
+                })
+                .catch(() => {
+                    // Offline — serve cached HTML
+                    return caches.match(request).then((cached) => cached || caches.match('/index.html'));
+                })
+        );
+        return;
+    }
+
+    // --- All other static assets (JS, CSS, fonts) → Stale-while-revalidate ---
     event.respondWith(
         caches.open(STATIC_CACHE).then(async (cache) => {
             const cached = await cache.match(request);
@@ -93,7 +113,6 @@ self.addEventListener('fetch', (event) => {
                 return response;
             }).catch(() => cached);
 
-            // Return cached immediately if available, otherwise wait for network
             return cached || fetchPromise;
         })
     );
