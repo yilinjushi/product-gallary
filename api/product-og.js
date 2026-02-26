@@ -30,8 +30,8 @@ export default async function handler(req, res) {
             return serveStaticHtml(res);
         }
 
-        const title = `先越科技 - ${product.title || '产品'}`;
-        const description = title; // No functional parameters as requested
+        const title = '先越科技 - 产品展示';
+        const description = product.title || '产品';
         const image = product.images && product.images.length > 0 ? product.images[0] : '';
         const url = `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}/?product=${id}`;
 

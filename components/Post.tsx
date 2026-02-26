@@ -92,8 +92,8 @@ export const Post: React.FC<PostProps> = ({ product, index = 99 }) => {
         if (isMobile && navigator.share) {
             try {
                 await navigator.share({
-                    title: `先越科技 - ${product.title}`,
-                    text: `先越科技 - ${product.title}`,
+                    title: '先越科技 - 产品展示',
+                    text: product.title,
                     url: shareUrl,
                 });
             } catch (err) {
