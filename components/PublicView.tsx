@@ -59,6 +59,48 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
     return () => observer.disconnect();
   }, [handleObserver]);
 
+  // Prefetch images for the next 5 products ahead of visible ones
+  const prefetchedRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (isLoading || products.length === 0) return;
+
+    const productCards = document.querySelectorAll('[data-product-index]');
+    if (productCards.length === 0) return;
+
+    const prefetchImages = (startIndex: number) => {
+      const sorted = [...products].sort((a, b) => a.sort_order - b.sort_order);
+      const filtered = activeCategory !== '全部' ? sorted.filter(p => p.tag === activeCategory) : sorted;
+
+      for (let i = startIndex; i < Math.min(startIndex + 5, filtered.length); i++) {
+        const product = filtered[i];
+        if (!product?.images) continue;
+        product.images.forEach((imgUrl: string) => {
+          if (!prefetchedRef.current.has(imgUrl)) {
+            prefetchedRef.current.add(imgUrl);
+            const img = new Image();
+            img.src = imgUrl;
+          }
+        });
+      }
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const index = parseInt((entry.target as HTMLElement).dataset.productIndex || '0', 10);
+          prefetchImages(index + 1);
+        }
+      });
+    }, { rootMargin: '200px' });
+
+    productCards.forEach(card => observer.observe(card));
+
+    // Also prefetch the first 5 immediately
+    prefetchImages(0);
+
+    return () => observer.disconnect();
+  }, [products, activeCategory, isLoading, targetProductId]);
+
   // Handle loading state
   if (isLoading) {
     return (
@@ -248,8 +290,8 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
           style={{ paddingTop: !targetProductId && categories.length > 1 ? 'calc(7.5rem + env(safe-area-inset-top, 0px))' : 'calc(4.5rem + env(safe-area-inset-top, 0px))' }}
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayProducts.map(product => (
-              <div key={product.id} className="break-inside-avoid">
+            {displayProducts.map((product, index) => (
+              <div key={product.id} className="break-inside-avoid" data-product-index={index}>
                 <Post product={product} />
               </div>
             ))}
