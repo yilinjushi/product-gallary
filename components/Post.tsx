@@ -82,14 +82,29 @@ export const Post: React.FC<PostProps> = ({ product }) => {
         // Events are stopped individually by child buttons
     };
 
-    const handleShare = (e: React.MouseEvent) => {
+    const handleShare = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        const url = `${window.location.origin}${window.location.pathname}?product=${product.id}`;
-        navigator.clipboard.writeText(url).then(() => {
-            alert("产品链接已复制到剪贴板！");
-        }).catch(err => {
-            console.error("复制链接失败: ", err);
-        });
+        const shareUrl = `${window.location.origin}/?product=${product.id}`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `先越科技 - ${product.title}`,
+                    text: product.description.slice(0, 100) + '...', // Optional short preview
+                    url: shareUrl,
+                });
+            } catch (err) {
+                // User may have cancelled the share, which is fine.
+                console.log("分享操作已取消或失败: ", err);
+            }
+        } else {
+            // Fallback for browsers that don't support Web Share API (e.g. some desktops)
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert("产品链接已复制到剪贴板！");
+            }).catch(err => {
+                console.error("复制链接失败: ", err);
+            });
+        }
     };
 
     const formatCount = (count: number) => {
