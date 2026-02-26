@@ -1,7 +1,7 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
-module.exports = (req, res) => {
-    // CORS headers
+export default function handler(req, res) {
+    // Set content type
     res.setHeader('Content-Type', 'application/json');
 
     // Only allow POST
@@ -48,4 +48,4 @@ module.exports = (req, res) => {
     } catch (err) {
         return res.status(500).json({ error: 'Internal server error: ' + err.message });
     }
-};
+}

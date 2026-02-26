@@ -1,6 +1,6 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
 
-module.exports = (req, res) => {
+export default function handler(req, res) {
     // Set content type
     res.setHeader('Content-Type', 'application/json');
 
@@ -46,4 +46,4 @@ module.exports = (req, res) => {
     } catch (err) {
         return res.status(500).json({ valid: false, error: 'Token validation failed: ' + err.message });
     }
-};
+}
