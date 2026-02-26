@@ -70,15 +70,21 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
     const prefetchImages = (startIndex: number) => {
       const sorted = [...products].sort((a, b) => a.sort_order - b.sort_order);
       const filtered = activeCategory !== '全部' ? sorted.filter(p => p.tag === activeCategory) : sorted;
+      const imgWidth = window.innerWidth > 768 ? 800 : 600;
 
       for (let i = startIndex; i < Math.min(startIndex + 5, filtered.length); i++) {
         const product = filtered[i];
         if (!product?.images) continue;
         product.images.forEach((imgUrl: string) => {
-          if (!prefetchedRef.current.has(imgUrl)) {
-            prefetchedRef.current.add(imgUrl);
+          // Use the same optimized URL that Post.tsx renders
+          let optimizedUrl = imgUrl;
+          if (imgUrl.includes('/storage/v1/object/public/')) {
+            optimizedUrl = imgUrl.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + `?width=${imgWidth}&quality=80`;
+          }
+          if (!prefetchedRef.current.has(optimizedUrl)) {
+            prefetchedRef.current.add(optimizedUrl);
             const img = new Image();
-            img.src = imgUrl;
+            img.src = optimizedUrl;
           }
         });
       }

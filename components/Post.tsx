@@ -8,6 +8,18 @@ interface PostProps {
     product: Product;
 }
 
+// Transform Supabase Storage URLs to use image rendering with resize + WebP
+const getOptimizedImageUrl = (url: string, width: number = 600): string => {
+    // Only transform Supabase storage URLs
+    if (url.includes('/storage/v1/object/public/')) {
+        return url.replace(
+            '/storage/v1/object/public/',
+            `/storage/v1/render/image/public/`
+        ) + `?width=${width}&quality=80`;
+    }
+    return url;
+};
+
 export const Post: React.FC<PostProps> = ({ product }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(product.fav || 0);
@@ -128,7 +140,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
     };
 
     return (
-        <article className="py-6 border-b-2 transition-colors cursor-default flex flex-col h-full" style={{ borderColor: 'var(--border-strong)', backgroundColor: 'var(--bg-primary)' }}>
+        <article className="py-6 border-b-2 transition-colors cursor-default flex flex-col h-full" style={{ borderColor: 'var(--border-strong)', backgroundColor: 'var(--bg-primary)', contentVisibility: 'auto', containIntrinsicSize: 'auto 500px' } as React.CSSProperties}>
 
             {/* Media Attachments (Full Width Area) */}
             {product.images && product.images.length > 0 && (
@@ -142,10 +154,11 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                         {product.images.map((img, idx) => (
                             <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative cursor-pointer" style={{ backgroundColor: 'var(--bg-card)' }} onClick={handleImageTap}>
                                 <img
-                                    src={img}
+                                    src={getOptimizedImageUrl(img, window.innerWidth > 768 ? 800 : 600)}
                                     className="absolute inset-0 w-full h-full object-cover select-none"
                                     alt={product.title}
                                     loading="lazy"
+                                    decoding="async"
                                 />
                             </div>
                         ))}

@@ -9,7 +9,7 @@ import { Product, ViewState, ProductFormData, SiteSettings } from './types';
 import { AdminLayout } from './components/AdminLayout';
 import { supabase, isConfigured } from './utils/supabaseClient';
 
-const PAGE_SIZE = 2;
+const PAGE_SIZE = 12;
 
 const App: React.FC = () => {
   // --- State ---
@@ -21,6 +21,24 @@ const App: React.FC = () => {
   );
   const [session, setSession] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Instantly load cached products for public mode
+  useEffect(() => {
+    if (appMode === 'public') {
+      try {
+        const cached = localStorage.getItem('cachedProducts');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setProducts(parsed);
+            setIsLoading(false); // Show cached data immediately
+          }
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+  }, [appMode]);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
@@ -140,6 +158,11 @@ const App: React.FC = () => {
 
         setProducts(formattedData);
         setHasMore(mode === 'public' ? (data || []).length >= PAGE_SIZE : false);
+
+        // Save to localStorage for instant load next time
+        if (mode === 'public') {
+          try { localStorage.setItem('cachedProducts', JSON.stringify(formattedData)); } catch (e) { }
+        }
       }
     } catch (error) {
       console.error('Error fetching products:', error);
