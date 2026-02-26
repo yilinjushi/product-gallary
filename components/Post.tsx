@@ -86,21 +86,21 @@ export const Post: React.FC<PostProps> = ({ product }) => {
         e.stopPropagation();
         const shareUrl = `${window.location.origin}/?product=${product.id}`;
 
-        if (navigator.share) {
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        if (isMobile && navigator.share) {
             try {
                 await navigator.share({
                     title: `先越科技 - ${product.title}`,
-                    text: product.description.slice(0, 100) + '...', // Optional short preview
+                    text: product.description.slice(0, 100) + '...',
                     url: shareUrl,
                 });
             } catch (err) {
-                // User may have cancelled the share, which is fine.
                 console.log("分享操作已取消或失败: ", err);
             }
         } else {
-            // Fallback for browsers that don't support Web Share API (e.g. some desktops)
             navigator.clipboard.writeText(shareUrl).then(() => {
-                alert("产品链接已复制到剪贴板！");
+                alert("已复制链接");
             }).catch(err => {
                 console.error("复制链接失败: ", err);
             });
