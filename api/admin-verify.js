@@ -1,20 +1,24 @@
 const crypto = require('crypto');
 
-const TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || process.env.ADMIN_PASSWORD || 'fallback-secret';
-
 module.exports = (req, res) => {
+    // Set content type
+    res.setHeader('Content-Type', 'application/json');
+
     // Only allow POST
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { token } = req.body || {};
-
-    if (!token) {
-        return res.status(401).json({ valid: false, error: 'No token provided' });
-    }
-
     try {
+        const TOKEN_SECRET = process.env.ADMIN_TOKEN_SECRET || process.env.ADMIN_PASSWORD || 'fallback-secret';
+
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+        const { token } = body;
+
+        if (!token) {
+            return res.status(401).json({ valid: false, error: 'No token provided' });
+        }
+
         const parts = token.split(':');
         if (parts.length !== 3) {
             return res.status(401).json({ valid: false, error: 'Invalid token format' });
@@ -40,6 +44,6 @@ module.exports = (req, res) => {
 
         return res.status(200).json({ valid: true });
     } catch (err) {
-        return res.status(401).json({ valid: false, error: 'Token validation failed' });
+        return res.status(500).json({ valid: false, error: 'Token validation failed: ' + err.message });
     }
 };

@@ -23,7 +23,13 @@ export const Auth: React.FC<AuthProps> = ({ onCancel, onAuth }) => {
         body: JSON.stringify({ password }),
       });
 
-      const data = await res.json();
+      let data;
+      const text = await res.text();
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error('服务器返回异常，请稍后重试');
+      }
 
       if (!res.ok) {
         throw new Error(data.error || '登录失败');
