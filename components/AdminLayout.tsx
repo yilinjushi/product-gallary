@@ -113,7 +113,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
                 <div className="p-4 border-t border-slate-100">
                     <div className="px-4 py-2 mb-2 text-xs text-slate-400 truncate">
-                        Logged in as: <br /> <span className="text-slate-600 font-medium">{session.user.email}</span>
+                        Logged in as: <br /> <span className="text-slate-600 font-medium">Admin</span>
                     </div>
                     <button
                         onClick={handleSignOut}
