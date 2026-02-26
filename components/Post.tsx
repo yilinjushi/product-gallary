@@ -128,11 +128,11 @@ export const Post: React.FC<PostProps> = ({ product }) => {
     };
 
     return (
-        <article className="py-6 border-b-2 border-white/20 bg-black hover:bg-[#0a0a0a] transition-colors cursor-default flex flex-col h-full">
+        <article className="py-6 border-b-2 transition-colors cursor-default flex flex-col h-full" style={{ borderColor: 'var(--border-strong)', backgroundColor: 'var(--bg-primary)' }}>
 
             {/* Media Attachments (Full Width Area) */}
             {product.images && product.images.length > 0 && (
-                <div className="group/carousel relative w-full aspect-video bg-[#1a1a1a] overflow-hidden mb-5 sm:rounded-2xl mx-0 sm:mx-4 sm:w-[calc(100%-2rem)] border border-white/5">
+                <div className="group/carousel relative w-full aspect-video overflow-hidden mb-5 sm:rounded-2xl mx-0 sm:mx-4 sm:w-[calc(100%-2rem)]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                     <div
                         ref={scrollRef}
                         onScroll={handleScroll}
@@ -140,7 +140,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
                         {product.images.map((img, idx) => (
-                            <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative bg-[#1a1a1a] cursor-pointer" onClick={handleImageTap}>
+                            <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative cursor-pointer" style={{ backgroundColor: 'var(--bg-card)' }} onClick={handleImageTap}>
                                 <img
                                     src={img}
                                     className="absolute inset-0 w-full h-full object-cover select-none"
@@ -154,7 +154,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                     {/* Tag Badge - Top Left */}
                     {product.tag && (
                         <div className="absolute top-3 left-3 z-10">
-                            <span className="bg-black/60 backdrop-blur-md text-amber-500 border border-white/10 text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wide">
+                            <span className="backdrop-blur-md text-amber-500 text-[11px] font-bold px-2.5 py-1 rounded-lg shadow-sm uppercase tracking-wide" style={{ backgroundColor: 'var(--tag-bg)', border: '1px solid var(--tag-border)' }}>
                                 {product.tag}
                             </span>
                         </div>
@@ -164,7 +164,8 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                     <div className="absolute top-3 right-3 z-10">
                         <button
                             onClick={handleLikeClick}
-                            className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-colors pointer-events-auto ${isLiked ? 'bg-amber-500 text-white border border-transparent' : 'bg-black/50 backdrop-blur-md text-white hover:text-amber-500 border border-white/10'}`}
+                            className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm transition-colors pointer-events-auto ${isLiked ? 'bg-amber-500 text-white border border-transparent' : 'backdrop-blur-md text-white hover:text-amber-500'}`}
+                            style={!isLiked ? { backgroundColor: 'var(--like-btn-bg)', border: '1px solid var(--like-btn-border)' } : undefined}
                         >
                             <Heart size={18} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.8} className={isLiked ? "animate-heart-bounce" : ""} />
                         </button>
@@ -176,7 +177,8 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                             {activeIndex > 0 && (
                                 <button
                                     onClick={() => scrollToIndex(activeIndex - 1)}
-                                    className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/10 shadow items-center justify-center text-white hover:bg-black/80 transition-all opacity-0 group-hover/carousel:opacity-100 pointer-events-auto"
+                                    className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full backdrop-blur-md shadow items-center justify-center text-white transition-all opacity-0 group-hover/carousel:opacity-100 pointer-events-auto"
+                                    style={{ backgroundColor: 'var(--arrow-bg)', border: '1px solid var(--like-btn-border)' }}
                                 >
                                     <ChevronLeft size={18} />
                                 </button>
@@ -184,7 +186,8 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                             {activeIndex < product.images.length - 1 && (
                                 <button
                                     onClick={() => scrollToIndex(activeIndex + 1)}
-                                    className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-md border border-white/10 shadow items-center justify-center text-white hover:bg-black/80 transition-all opacity-0 group-hover/carousel:opacity-100 pointer-events-auto"
+                                    className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full backdrop-blur-md shadow items-center justify-center text-white transition-all opacity-0 group-hover/carousel:opacity-100 pointer-events-auto"
+                                    style={{ backgroundColor: 'var(--arrow-bg)', border: '1px solid var(--like-btn-border)' }}
                                 >
                                     <ChevronRight size={18} />
                                 </button>
@@ -227,21 +230,21 @@ export const Post: React.FC<PostProps> = ({ product }) => {
             >
 
                 {/* Text Content */}
-                <div className="text-[15px] text-gray-200 leading-snug break-words mb-4">
-                    <h2 className="font-bold text-[22px] sm:text-[24px] tracking-tight leading-tight mb-2.5 text-white">{product.title}</h2>
-                    <p className="whitespace-pre-line text-gray-300 leading-relaxed text-[15px]">{product.description}</p>
+                <div className="text-[15px] leading-snug break-words mb-4" style={{ color: 'var(--text-secondary)' }}>
+                    <h2 className="font-bold text-[22px] sm:text-[24px] tracking-tight leading-tight mb-2.5" style={{ color: 'var(--text-primary)' }}>{product.title}</h2>
+                    <p className="whitespace-pre-line leading-relaxed text-[15px]" style={{ color: 'var(--text-description)' }}>{product.description}</p>
                 </div>
 
                 {/* Interaction Bar & Meta */}
-                <div className="flex flex-wrap items-center justify-between text-gray-400 mt-2" onClick={handleActionClick}>
+                <div className="flex flex-wrap items-center justify-between mt-2" style={{ color: 'var(--text-muted)' }} onClick={handleActionClick}>
 
                     <div className="flex items-center gap-6 sm:gap-8">
-                        <button onClick={handleLikeClick} className={`flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${isLiked ? 'text-amber-500' : 'text-gray-400 hover:text-amber-500'}`}>
+                        <button onClick={handleLikeClick} className={`flex items-center gap-1.5 text-[14px] font-medium transition-colors cursor-pointer ${isLiked ? 'text-amber-500' : 'hover:text-amber-500'}`} style={!isLiked ? { color: 'var(--text-muted)' } : undefined}>
                             <Heart size={16} fill={isLiked ? "currentColor" : "none"} strokeWidth={1.5} />
                             {formatCount(likesCount)}
                         </button>
 
-                        <div className="flex items-center gap-2 text-gray-400 p-0 cursor-default">
+                        <div className="flex items-center gap-2 p-0 cursor-default" style={{ color: 'var(--text-muted)' }}>
                             <div className="p-2 -ml-2">
                                 <BarChart2 size={20} strokeWidth={1.5} />
                             </div>
@@ -250,10 +253,11 @@ export const Post: React.FC<PostProps> = ({ product }) => {
 
                         <button
                             onClick={handleShare}
-                            className="flex items-center gap-2 group p-0 transition-colors text-gray-400 hover:text-amber-500"
+                            className="flex items-center gap-2 group p-0 transition-colors hover:text-amber-500"
+                            style={{ color: 'var(--text-muted)' }}
                             title="分享链接"
                         >
-                            <div className="p-2 rounded-full group-hover:bg-white/5 transition-colors -ml-2">
+                            <div className="p-2 rounded-full transition-colors -ml-2">
                                 <Share size={18} strokeWidth={1.5} />
                             </div>
                         </button>

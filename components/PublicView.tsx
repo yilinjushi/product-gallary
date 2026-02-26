@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, ArrowLeft, MoreHorizontal, Info, Mail } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, MoreHorizontal, Info, Mail, Sun, Moon } from 'lucide-react';
 import { Product, SiteSettings } from '../types';
 import { Post } from './Post';
 import { PostSkeleton } from './PostSkeleton';
@@ -23,7 +23,19 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   const [showContact, setShowContact] = useState(false);
   const [targetProductId, setTargetProductId] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState('全部');
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('theme') as 'dark' | 'light') || 'dark';
+    }
+    return 'dark';
+  });
   const sentinelRef = useRef<HTMLDivElement>(null);
+
+  // Apply theme to <html> and persist
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -50,10 +62,10 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   // Handle loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black flex flex-col font-sans tracking-tight">
+      <div className="min-h-screen flex flex-col font-sans tracking-tight" style={{ backgroundColor: 'var(--bg-primary)' }}>
         <header
-          className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 py-4 h-16"
-          style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
+          className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md py-4 h-16"
+          style={{ backgroundColor: 'var(--bg-header)', borderBottom: '1px solid var(--border-color)', paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
         />
         <div className="flex-1 pb-20 max-w-7xl mx-auto w-full px-0 sm:px-6 lg:px-8 mt-4" style={{ paddingTop: 'calc(4.5rem + env(safe-area-inset-top, 0px))' }}>
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
@@ -71,15 +83,16 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   // Handle empty state
   if (products.length === 0) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-8">
-        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6">
-          <ShoppingBag size={24} className="text-gray-600" />
+      <div className="min-h-screen flex flex-col items-center justify-center p-8" style={{ backgroundColor: 'var(--bg-primary)' }}>
+        <div className="w-16 h-16 rounded-full flex items-center justify-center mb-6" style={{ backgroundColor: 'var(--hover-bg)' }}>
+          <ShoppingBag size={24} style={{ color: 'var(--text-muted)' }} />
         </div>
-        <h2 className="text-xl font-bold text-white mb-2">No Posts Yet</h2>
-        <p className="text-gray-400 mb-6 text-center text-[15px]">When products are added to the inventory, they will appear here.</p>
+        <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Posts Yet</h2>
+        <p className="mb-6 text-center text-[15px]" style={{ color: 'var(--text-muted)' }}>When products are added to the inventory, they will appear here.</p>
         <button
           onClick={onBackToAdmin}
-          className="bg-white text-black px-6 py-2 rounded-full font-bold text-[15px] hover:bg-gray-200 transition-colors"
+          className="px-6 py-2 rounded-full font-bold text-[15px] transition-colors"
+          style={{ backgroundColor: 'var(--cat-active-bg)', color: 'var(--cat-active-text)' }}
         >
           Sign in to Admin
         </button>
@@ -104,15 +117,17 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
   const categories = ['全部', ...Array.from(new Set(products.map(p => p.tag).filter((tag): tag is string => !!tag)))];
 
   return (
-    <div className="min-h-screen bg-black flex justify-center font-sans tracking-tight text-white">
+    <div className="min-h-screen flex justify-center font-sans tracking-tight" style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
 
       {/* Main Timeline Column */}
-      <main className="w-full min-h-screen flex flex-col relative bg-black">
+      <main className="w-full min-h-screen flex flex-col relative" style={{ backgroundColor: 'var(--bg-primary)' }}>
 
         {/* Fixed Header */}
         <header
-          className="fixed top-0 left-0 right-0 z-50 bg-black/80 backdrop-blur-md border-b border-white/5 pt-3 flex flex-col cursor-pointer transition-all duration-300"
+          className="fixed top-0 left-0 right-0 z-50 backdrop-blur-md pt-3 flex flex-col cursor-pointer transition-all duration-300"
           style={{
+            backgroundColor: 'var(--bg-header)',
+            borderBottom: '1px solid var(--border-color)',
             paddingTop: 'max(0.75rem, env(safe-area-inset-top))'
           }}
           onClick={() => {
@@ -125,21 +140,23 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
               {targetProductId && (
                 <button
                   onClick={(e) => { e.stopPropagation(); window.location.href = window.location.pathname; }}
-                  className="p-1.5 -ml-1 rounded-full hover:bg-white/10 text-gray-300 transition-colors"
+                  className="p-1.5 -ml-1 rounded-full transition-colors"
+                  style={{ color: 'var(--text-secondary)' }}
                   title="查看所有产品"
                 >
-                  <ArrowLeft size={20} className="text-white" />
+                  <ArrowLeft size={20} style={{ color: 'var(--text-primary)' }} />
                 </button>
               )}
               <div className="flex flex-col">
-                <h1 className="text-[20px] font-bold text-white tracking-tight">先越科技</h1>
-                <p className="text-[13px] text-gray-400">核心技术驱动，助力电子产品快速落地。</p>
+                <h1 className="text-[20px] font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>先越科技</h1>
+                <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>核心技术驱动，助力电子产品快速落地。</p>
               </div>
             </div>
             <div className="relative">
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="p-1.5 rounded-full hover:bg-white/10 transition-colors text-white"
+                className="p-1.5 rounded-full transition-colors"
+                style={{ color: 'var(--text-primary)' }}
               >
                 <MoreHorizontal size={20} />
               </button>
@@ -153,21 +170,50 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="absolute right-0 top-10 w-48 bg-[#1a1a1a] rounded-xl shadow-2xl border border-white/10 overflow-hidden py-1 z-50 origin-top-right"
+                      className="absolute right-0 top-10 w-48 rounded-xl shadow-2xl overflow-hidden py-1 z-50 origin-top-right"
+                      style={{ backgroundColor: 'var(--menu-bg)', border: '1px solid var(--menu-border)' }}
                     >
                       <button
                         onClick={() => { setShowAbout(true); setIsMenuOpen(false); }}
-                        className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center space-x-3 transition-colors text-[15px] text-gray-200"
+                        className="w-full text-left px-4 py-2.5 flex items-center space-x-3 transition-colors text-[15px]"
+                        style={{ color: 'var(--menu-text)' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
                         <Info size={18} />
                         <span>关于</span>
                       </button>
                       <button
                         onClick={() => { setShowContact(true); setIsMenuOpen(false); }}
-                        className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center space-x-3 transition-colors text-[15px] text-gray-200"
+                        className="w-full text-left px-4 py-2.5 flex items-center space-x-3 transition-colors text-[15px]"
+                        style={{ color: 'var(--menu-text)' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
                         <Mail size={18} />
                         <span>联系</span>
+                      </button>
+                      {/* Divider */}
+                      <div className="my-1" style={{ borderTop: '1px solid var(--border-color)' }} />
+                      <button
+                        onClick={() => { setTheme('light'); setIsMenuOpen(false); }}
+                        className="w-full text-left px-4 py-2.5 flex items-center space-x-3 transition-colors text-[15px]"
+                        style={{ color: 'var(--menu-text)' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <Sun size={18} />
+                        <span>白色风格</span>
+                      </button>
+                      <button
+                        onClick={() => { setTheme('dark'); setIsMenuOpen(false); }}
+                        className="w-full text-left px-4 py-2.5 flex items-center space-x-3 transition-colors text-[15px]"
+                        style={{ color: 'var(--menu-text)' }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--menu-hover)'}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      >
+                        <Moon size={18} />
+                        <span>黑色风格</span>
                       </button>
                     </motion.div>
                   </>
@@ -178,12 +224,16 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
 
           {/* Bottom Row: Category Scroller */}
           {!targetProductId && categories.length > 1 && (
-            <div className="w-full overflow-x-auto hide-scrollbar mt-3 pb-2 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex items-center gap-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="w-full overflow-x-auto hide-scrollbar mt-3 pb-2 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex items-center gap-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' as any }}>
               {categories.map(cat => (
                 <button
                   key={cat}
                   onClick={(e) => { e.stopPropagation(); window.scrollTo({ top: 0, behavior: 'smooth' }); setActiveCategory(cat); }}
-                  className={`px-4 py-1.5 rounded-full text-[14px] border font-medium transition-colors whitespace-nowrap ${activeCategory === cat ? 'bg-white text-black border-transparent' : 'bg-transparent text-gray-400 border-white/20 hover:text-white hover:border-white/40'}`}
+                  className="px-4 py-1.5 rounded-full text-[14px] border font-medium transition-colors whitespace-nowrap"
+                  style={activeCategory === cat
+                    ? { backgroundColor: 'var(--cat-active-bg)', color: 'var(--cat-active-text)', borderColor: 'transparent' }
+                    : { backgroundColor: 'transparent', color: 'var(--cat-inactive-text)', borderColor: 'var(--cat-border)' }
+                  }
                 >
                   {cat}
                 </button>
@@ -209,10 +259,10 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
           {!targetProductId && (
             <div ref={sentinelRef} className="flex justify-center py-8">
               {isLoadingMore && (
-                <div className="w-8 h-8 border-4 border-white/10 border-t-white rounded-full animate-spin" />
+                <div className="w-8 h-8 border-4 rounded-full animate-spin" style={{ borderColor: 'var(--spinner-track)', borderTopColor: 'var(--spinner-head)' }} />
               )}
               {!hasMore && products.length > 0 && (
-                <p className="text-gray-500 text-sm">已显示全部产品</p>
+                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>已显示全部产品</p>
               )}
             </div>
           )}

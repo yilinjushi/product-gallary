@@ -2,6 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ===== Theme System ===== */
+:root,
+[data-theme="dark"] {
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-card: #1a1a1a;
+  --bg-header: rgba(0, 0, 0, 0.8);
+  --text-primary: #ffffff;
+  --text-secondary: #d1d5db;
+  --text-muted: #9ca3af;
+  --text-description: #d1d5db;
+  --border-color: rgba(255, 255, 255, 0.05);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --hover-bg: rgba(255, 255, 255, 0.1);
+  --hover-card: #0a0a0a;
+  --menu-bg: #1a1a1a;
+  --menu-border: rgba(255, 255, 255, 0.1);
+  --menu-hover: rgba(255, 255, 255, 0.05);
+  --menu-text: #e5e7eb;
+  --cat-active-bg: #ffffff;
+  --cat-active-text: #000000;
+  --cat-inactive-text: #9ca3af;
+  --cat-border: rgba(255, 255, 255, 0.2);
+  --cat-hover-text: #ffffff;
+  --cat-hover-border: rgba(255, 255, 255, 0.4);
+  --skeleton-bg: #1a1a1a;
+  --skeleton-shine: #2a2a2a;
+  --tag-bg: rgba(0, 0, 0, 0.6);
+  --tag-border: rgba(255, 255, 255, 0.1);
+  --like-btn-bg: rgba(0, 0, 0, 0.5);
+  --like-btn-border: rgba(255, 255, 255, 0.1);
+  --arrow-bg: rgba(0, 0, 0, 0.5);
+  --arrow-hover: rgba(0, 0, 0, 0.8);
+  --share-hover-bg: rgba(255, 255, 255, 0.05);
+  --dot-active: #ffffff;
+  --dot-inactive: rgba(255, 255, 255, 0.4);
+  --spinner-track: rgba(255, 255, 255, 0.1);
+  --spinner-head: #ffffff;
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg-primary: #f8f9fa;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.85);
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-description: #4b5563;
+  --border-color: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(0, 0, 0, 0.12);
+  --hover-bg: rgba(0, 0, 0, 0.04);
+  --hover-card: #f3f4f6;
+  --menu-bg: #ffffff;
+  --menu-border: rgba(0, 0, 0, 0.1);
+  --menu-hover: rgba(0, 0, 0, 0.04);
+  --menu-text: #374151;
+  --cat-active-bg: #111827;
+  --cat-active-text: #ffffff;
+  --cat-inactive-text: #6b7280;
+  --cat-border: rgba(0, 0, 0, 0.15);
+  --cat-hover-text: #111827;
+  --cat-hover-border: rgba(0, 0, 0, 0.3);
+  --skeleton-bg: #e5e7eb;
+  --skeleton-shine: #f3f4f6;
+  --tag-bg: rgba(255, 255, 255, 0.85);
+  --tag-border: rgba(0, 0, 0, 0.1);
+  --like-btn-bg: rgba(255, 255, 255, 0.8);
+  --like-btn-border: rgba(0, 0, 0, 0.1);
+  --arrow-bg: rgba(255, 255, 255, 0.8);
+  --arrow-hover: rgba(255, 255, 255, 0.95);
+  --share-hover-bg: rgba(0, 0, 0, 0.04);
+  --dot-active: #ffffff;
+  --dot-inactive: rgba(255, 255, 255, 0.5);
+  --spinner-track: rgba(0, 0, 0, 0.1);
+  --spinner-head: #111827;
+  color-scheme: light;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
