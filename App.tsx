@@ -91,30 +91,56 @@ const App: React.FC = () => {
   const fetchProducts = async (mode: 'admin' | 'public' = appMode) => {
     setIsLoading(true);
     try {
-      let query = supabase
-        .from('products')
-        .select('*')
-        .order('sort_order', { ascending: true })
-        .order('created_at', { ascending: false });
+      // Check if there's a specific product to load via URL param
+      const params = new URLSearchParams(window.location.search);
+      const targetProductId = params.get('product');
 
-      if (mode === 'public') {
-        query = query.range(0, PAGE_SIZE - 1);
+      if (mode === 'public' && targetProductId) {
+        // Fetch the specific shared product directly
+        const { data, error } = await supabase
+          .from('products')
+          .select('*')
+          .eq('id', targetProductId)
+          .single();
+
+        if (error) throw error;
+
+        const formattedData: Product[] = data ? [{
+          ...data,
+          fav: data.fav || 300,
+          views: data.views || 3000,
+          sort_order: data.sort_order ?? 0,
+          createdAt: new Date(data.created_at).getTime()
+        }] : [];
+
+        setProducts(formattedData);
+        setHasMore(false);
+      } else {
+        let query = supabase
+          .from('products')
+          .select('*')
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: false });
+
+        if (mode === 'public') {
+          query = query.range(0, PAGE_SIZE - 1);
+        }
+
+        const { data, error } = await query;
+
+        if (error) throw error;
+
+        const formattedData: Product[] = (data || []).map(item => ({
+          ...item,
+          fav: item.fav || 300,
+          views: item.views || 3000,
+          sort_order: item.sort_order ?? 0,
+          createdAt: new Date(item.created_at).getTime()
+        }));
+
+        setProducts(formattedData);
+        setHasMore(mode === 'public' ? (data || []).length >= PAGE_SIZE : false);
       }
-
-      const { data, error } = await query;
-
-      if (error) throw error;
-
-      const formattedData: Product[] = (data || []).map(item => ({
-        ...item,
-        fav: item.fav || 300,
-        views: item.views || 3000,
-        sort_order: item.sort_order ?? 0,
-        createdAt: new Date(item.created_at).getTime()
-      }));
-
-      setProducts(formattedData);
-      setHasMore(mode === 'public' ? (data || []).length >= PAGE_SIZE : false);
     } catch (error) {
       console.error('Error fetching products:', error);
     } finally {
