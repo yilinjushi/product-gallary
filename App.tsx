@@ -19,7 +19,7 @@ const App: React.FC = () => {
   const [viewState, setViewState] = useState<ViewState>({ type: 'list' });
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [appMode, setAppMode] = useState<'admin' | 'public'>(() =>
-    typeof window !== 'undefined' && window.location.pathname === '/admin' ? 'admin' : 'public'
+    typeof window !== 'undefined' && window.location.pathname === '/adminportal' ? 'admin' : 'public'
   );
   const [session, setSession] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -70,17 +70,32 @@ const App: React.FC = () => {
     );
   }
 
-  // Initial Data Load & Auth Check
+  // Initial Data Load & Admin Token Check
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-    });
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
+    // Check for stored admin token
+    const storedToken = localStorage.getItem('adminToken');
+    const storedExpiry = localStorage.getItem('adminTokenExpiry');
+    if (storedToken && storedExpiry && Date.now() < parseInt(storedExpiry, 10)) {
+      // Verify token with server
+      fetch('/api/admin-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: storedToken }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.valid) {
+            setSession({ token: storedToken });
+          } else {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('adminTokenExpiry');
+          }
+        })
+        .catch(() => {
+          // Offline — trust the local expiry
+          setSession({ token: storedToken });
+        });
+    }
 
     const fetchSettings = async () => {
       try {
@@ -94,9 +109,6 @@ const App: React.FC = () => {
     };
 
     fetchSettings();
-    // fetchProducts is now called in the appMode useEffect below
-
-    return () => subscription.unsubscribe();
   }, []);
 
   // Sync appMode with URL (back/forward)
@@ -297,8 +309,10 @@ const App: React.FC = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
+  const handleSignOut = () => {
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminTokenExpiry');
+    setSession(null);
     setAppMode('public');
     window.history.pushState(null, '', '/');
   };
@@ -307,7 +321,7 @@ const App: React.FC = () => {
 
   const goToAdmin = () => {
     setAppMode('admin');
-    window.history.pushState(null, '', '/admin');
+    window.history.pushState(null, '', '/adminportal');
   };
   const goToPublic = () => {
     setAppMode('public');
@@ -334,7 +348,14 @@ const App: React.FC = () => {
   if (!session) {
     return (
       <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 size={32} className="animate-spin text-slate-300" /></div>}>
-        <Auth onCancel={goToPublic} />
+        <Auth
+          onCancel={goToPublic}
+          onAuth={(token, expiresAt) => {
+            localStorage.setItem('adminToken', token);
+            localStorage.setItem('adminTokenExpiry', expiresAt.toString());
+            setSession({ token });
+          }}
+        />
       </Suspense>
     );
   }
