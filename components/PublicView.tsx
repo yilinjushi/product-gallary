@@ -197,7 +197,7 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
           className="flex-1 pb-20 max-w-7xl mx-auto w-full px-0 sm:px-6 lg:px-8 mt-2"
           style={{ paddingTop: !targetProductId && categories.length > 1 ? 'calc(7.5rem + env(safe-area-inset-top, 0px))' : 'calc(4.5rem + env(safe-area-inset-top, 0px))' }}
         >
-          <div className="columns-1 sm:columns-2 lg:columns-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayProducts.map(product => (
               <div key={product.id} className="break-inside-avoid">
                 <Post product={product} />
