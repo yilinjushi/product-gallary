@@ -6,9 +6,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface PostProps {
     product: Product;
+    index?: number;
 }
 
-export const Post: React.FC<PostProps> = ({ product }) => {
+export const Post: React.FC<PostProps> = ({ product, index = 99 }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(product.fav || 0);
     const [viewsCount, setViewsCount] = useState(product.views || 0);
@@ -141,12 +142,19 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                     >
                         {product.images.map((img, idx) => (
                             <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative cursor-pointer" style={{ backgroundColor: 'var(--bg-card)' }} onClick={handleImageTap}>
+                                <div className="absolute inset-0 animate-pulse" style={{ background: 'linear-gradient(135deg, var(--bg-card) 0%, var(--border-color) 50%, var(--bg-card) 100%)' }} />
                                 <img
                                     src={img}
                                     className="absolute inset-0 w-full h-full object-cover select-none"
                                     alt={product.title}
-                                    loading="lazy"
+                                    loading={index < 3 && idx === 0 ? 'eager' : 'lazy'}
                                     decoding="async"
+                                    {...(index < 3 && idx === 0 ? { fetchPriority: 'high' as const } : {})}
+                                    onLoad={(e) => {
+                                        // Hide blur placeholder once image loads
+                                        const prev = (e.target as HTMLElement).previousElementSibling as HTMLElement;
+                                        if (prev) prev.style.display = 'none';
+                                    }}
                                 />
                             </div>
                         ))}

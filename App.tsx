@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { AlertTriangle, Loader2 } from 'lucide-react';
-import { ProductList } from './components/ProductList';
-import { ProductForm } from './components/ProductForm';
 import { PublicView } from './components/PublicView';
-import { AdminSettings } from './components/AdminSettings';
-import { Auth } from './components/Auth';
 import { Product, ViewState, ProductFormData, SiteSettings } from './types';
-import { AdminLayout } from './components/AdminLayout';
 import { supabase, isConfigured } from './utils/supabaseClient';
+
+// Lazy load admin-only components (not needed for public users)
+const ProductList = React.lazy(() => import('./components/ProductList').then(m => ({ default: m.ProductList })));
+const ProductForm = React.lazy(() => import('./components/ProductForm').then(m => ({ default: m.ProductForm })));
+const AdminSettings = React.lazy(() => import('./components/AdminSettings').then(m => ({ default: m.AdminSettings })));
+const Auth = React.lazy(() => import('./components/Auth').then(m => ({ default: m.Auth })));
+const AdminLayout = React.lazy(() => import('./components/AdminLayout').then(m => ({ default: m.AdminLayout })));
 
 const PAGE_SIZE = 12;
 
@@ -330,64 +332,70 @@ const App: React.FC = () => {
 
   // If Admin Mode requested but not logged in
   if (!session) {
-    return <Auth onCancel={goToPublic} />;
+    return (
+      <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 size={32} className="animate-spin text-slate-300" /></div>}>
+        <Auth onCancel={goToPublic} />
+      </Suspense>
+    );
   }
 
   // --- Render Admin View (Authenticated) ---
   return (
-    <AdminLayout
-      session={session}
-      viewState={viewState}
-      setViewState={setViewState}
-      isSidebarOpen={isSidebarOpen}
-      setIsSidebarOpen={setIsSidebarOpen}
-      handleSignOut={handleSignOut}
-      goToPublic={goToPublic}
-    >
-      {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <div className="animate-spin text-slate-300">
-            <Loader2 size={32} />
+    <Suspense fallback={<div className="flex h-screen items-center justify-center"><Loader2 size={32} className="animate-spin text-slate-300" /></div>}>
+      <AdminLayout
+        session={session}
+        viewState={viewState}
+        setViewState={setViewState}
+        isSidebarOpen={isSidebarOpen}
+        setIsSidebarOpen={setIsSidebarOpen}
+        handleSignOut={handleSignOut}
+        goToPublic={goToPublic}
+      >
+        {isLoading ? (
+          <div className="flex h-64 items-center justify-center">
+            <div className="animate-spin text-slate-300">
+              <Loader2 size={32} />
+            </div>
           </div>
-        </div>
-      ) : (
-        <>
-          {viewState.type === 'list' && (
-            <ProductList
-              products={products}
-              onEdit={(product) => setViewState({ type: 'edit', product })}
-              onDelete={handleDeleteProduct}
-              onAddNew={() => setViewState({ type: 'create' })}
-              onReorder={handleReorderProducts}
-            />
-          )}
+        ) : (
+          <>
+            {viewState.type === 'list' && (
+              <ProductList
+                products={products}
+                onEdit={(product) => setViewState({ type: 'edit', product })}
+                onDelete={handleDeleteProduct}
+                onAddNew={() => setViewState({ type: 'create' })}
+                onReorder={handleReorderProducts}
+              />
+            )}
 
-          {viewState.type === 'create' && (
-            <ProductForm
-              mode="create"
-              onSubmit={handleCreateProduct}
-              onCancel={() => setViewState({ type: 'list' })}
-            />
-          )}
+            {viewState.type === 'create' && (
+              <ProductForm
+                mode="create"
+                onSubmit={handleCreateProduct}
+                onCancel={() => setViewState({ type: 'list' })}
+              />
+            )}
 
-          {viewState.type === 'edit' && (
-            <ProductForm
-              mode="edit"
-              initialData={viewState.product}
-              onSubmit={(data) => handleUpdateProduct(viewState.product.id, data)}
-              onCancel={() => setViewState({ type: 'list' })}
-            />
-          )}
+            {viewState.type === 'edit' && (
+              <ProductForm
+                mode="edit"
+                initialData={viewState.product}
+                onSubmit={(data) => handleUpdateProduct(viewState.product.id, data)}
+                onCancel={() => setViewState({ type: 'list' })}
+              />
+            )}
 
-          {viewState.type === 'settings' && (
-            <AdminSettings
-              settings={siteSettings}
-              onUpdate={(newSettings) => setSiteSettings(newSettings)}
-            />
-          )}
-        </>
-      )}
-    </AdminLayout>
+            {viewState.type === 'settings' && (
+              <AdminSettings
+                settings={siteSettings}
+                onUpdate={(newSettings) => setSiteSettings(newSettings)}
+              />
+            )}
+          </>
+        )}
+      </AdminLayout>
+    </Suspense>
   );
 };
 

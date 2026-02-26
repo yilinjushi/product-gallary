@@ -1,11 +1,13 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingBag, ArrowLeft, MoreHorizontal, Info, Mail, Sun, Moon } from 'lucide-react';
 import { Product, SiteSettings } from '../types';
 import { Post } from './Post';
 import { PostSkeleton } from './PostSkeleton';
-import { AboutModal } from './AboutModal';
-import { ContactModal } from './ContactModal';
+
+// Lazy load modals (only loaded when user clicks menu)
+const AboutModal = React.lazy(() => import('./AboutModal').then(m => ({ default: m.AboutModal })));
+const ContactModal = React.lazy(() => import('./ContactModal').then(m => ({ default: m.ContactModal })));
 
 interface PublicViewProps {
   products: Product[];
@@ -292,7 +294,7 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {displayProducts.map((product, index) => (
               <div key={product.id} className="break-inside-avoid" data-product-index={index}>
-                <Post product={product} />
+                <Post product={product} index={index} />
               </div>
             ))}
           </div>
@@ -315,20 +317,24 @@ export const PublicView: React.FC<PublicViewProps> = ({ products, isLoading, has
       {/* --- About Modal --- */}
       <AnimatePresence>
         {showAbout && (
-          <AboutModal
-            onClose={() => setShowAbout(false)}
-            text={settings?.about_text || '暂无关于信息。'}
-          />
+          <Suspense fallback={null}>
+            <AboutModal
+              onClose={() => setShowAbout(false)}
+              text={settings?.about_text || '暂无关于信息。'}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 
       {/* --- Contact Modal --- */}
       <AnimatePresence>
         {showContact && (
-          <ContactModal
-            onClose={() => setShowContact(false)}
-            text={settings?.contact_text || '暂无联系信息。'}
-          />
+          <Suspense fallback={null}>
+            <ContactModal
+              onClose={() => setShowContact(false)}
+              text={settings?.contact_text || '暂无联系信息。'}
+            />
+          </Suspense>
         )}
       </AnimatePresence>
 

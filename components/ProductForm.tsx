@@ -136,7 +136,45 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Compress image using canvas: max 1200px wide, JPEG quality 0.8
+  const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promise<File> => {
+    return new Promise((resolve) => {
+      // Skip non-image or already small files
+      if (!file.type.startsWith('image/') || file.size < 100 * 1024) {
+        resolve(file);
+        return;
+      }
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (blob && blob.size < file.size) {
+              resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+            } else {
+              resolve(file); // Original is smaller, keep it
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.onerror = () => resolve(file);
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
     setError(null);
     const files = Array.from(e.target.files) as File[];
@@ -144,9 +182,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       setError('You can only have a maximum of 10 images.');
       return;
     }
+    // Compress all images before adding
+    const compressed = await Promise.all(files.map(f => compressImage(f)));
     setImageItems((prev) => [
       ...prev,
-      ...files.map((file) => ({
+      ...compressed.map((file) => ({
         type: 'file' as const,
         file,
         id: `f-${Date.now()}-${Math.random().toString(36).slice(2)}`,
