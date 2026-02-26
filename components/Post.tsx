@@ -8,18 +8,6 @@ interface PostProps {
     product: Product;
 }
 
-// Transform Supabase Storage URLs to use image rendering with resize + WebP
-const getOptimizedImageUrl = (url: string, width: number = 600): string => {
-    // Only transform Supabase storage URLs
-    if (url.includes('/storage/v1/object/public/')) {
-        return url.replace(
-            '/storage/v1/object/public/',
-            `/storage/v1/render/image/public/`
-        ) + `?width=${width}&quality=80`;
-    }
-    return url;
-};
-
 export const Post: React.FC<PostProps> = ({ product }) => {
     const [isLiked, setIsLiked] = useState(false);
     const [likesCount, setLikesCount] = useState(product.fav || 0);
@@ -154,7 +142,7 @@ export const Post: React.FC<PostProps> = ({ product }) => {
                         {product.images.map((img, idx) => (
                             <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative cursor-pointer" style={{ backgroundColor: 'var(--bg-card)' }} onClick={handleImageTap}>
                                 <img
-                                    src={getOptimizedImageUrl(img, window.innerWidth > 768 ? 800 : 600)}
+                                    src={img}
                                     className="absolute inset-0 w-full h-full object-cover select-none"
                                     alt={product.title}
                                     loading="lazy"
