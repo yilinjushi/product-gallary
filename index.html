@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#000000" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="先越科技" />
-    <meta name="description" content="核心技术驱动，助力电子产品快速落地。" />
-    <title>先越科技 - 产品展示</title>
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
-    <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg" />
-    <!-- DNS Preconnect for Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="先越科技" />
+  <meta name="description" content="核心技术驱动，助力电子产品快速落地。" />
+  <title>先越科技 - 产品展示</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+  <link rel="icon" type="image/svg+xml" href="/icons/icon-192.svg" />
   <style>
-    body { font-family: 'Inter', sans-serif; background-color: #ffffff; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', '微软雅黑';
+      background-color: #ffffff;
+    }
   </style>
   <link rel="stylesheet" href="/index.css">
   <!-- Dynamic Supabase preconnect (injected at build time via env) -->
   <script>
     // Preconnect to Supabase domain as early as possible
-    (function() {
+    (function () {
       try {
         var keys = Object.keys(import.meta ? {} : {});
-      } catch(e) {}
+      } catch (e) { }
       // Fallback: parse the page's fetch calls after load
-      var observer = new PerformanceObserver(function(list) {
-        list.getEntries().forEach(function(entry) {
+      var observer = new PerformanceObserver(function (list) {
+        list.getEntries().forEach(function (entry) {
           if (entry.name && entry.name.includes('supabase.co')) {
             var url = new URL(entry.name);
             var link = document.createElement('link');
@@ -40,21 +40,23 @@
           }
         });
       });
-      try { observer.observe({ type: 'resource', buffered: true }); } catch(e) {}
+      try { observer.observe({ type: 'resource', buffered: true }); } catch (e) { }
     })();
   </script>
 </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('SW registered:', reg.scope))
-            .catch(err => console.log('SW registration failed:', err));
-        });
-      }
-    </script>
-  </body>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW registered:', reg.scope))
+          .catch(err => console.log('SW registration failed:', err));
+      });
+    }
+  </script>
+</body>
+
 </html>
