@@ -4,7 +4,7 @@ export const PostSkeleton: React.FC = () => {
     return (
         <article className="py-6 border-b border-white/10 sm:border-y sm:my-2 bg-black hover:bg-[#0a0a0a] transition-colors cursor-default block animate-pulse sm:rounded-2xl overflow-hidden">
             {/* Image Skeleton */}
-            <div className="w-full aspect-[4/3] bg-[#1a1a1a] mb-5 sm:rounded-2xl mx-0 sm:mx-4 sm:w-[calc(100%-2rem)] border border-white/5" />
+            <div className="w-full aspect-square bg-[#1a1a1a] mb-5 sm:rounded-2xl mx-0 sm:mx-4 sm:w-[calc(100%-2rem)] border border-white/5" />
 
             {/* Content Area */}
             <div
