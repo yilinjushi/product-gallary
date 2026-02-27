@@ -133,7 +133,7 @@ export const Post: React.FC<PostProps> = ({ product, index = 99 }) => {
 
             {/* Media Attachments (Full Width Area) */}
             {product.images && product.images.length > 0 && (
-                <div className="group/carousel relative w-full aspect-video overflow-hidden mb-5 sm:rounded-2xl mx-0 sm:mx-4 sm:w-[calc(100%-2rem)]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                <div className="group/carousel relative w-full aspect-[4/3] overflow-hidden mb-5 sm:rounded-2xl mx-0 sm:mx-4 sm:w-[calc(100%-2rem)]" style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
                     <div
                         ref={scrollRef}
                         onScroll={handleScroll}
