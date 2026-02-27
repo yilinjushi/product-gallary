@@ -18,9 +18,13 @@ export const Post: React.FC<PostProps> = ({ product, index = 99 }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const lastTapRef = useRef<number>(0);
 
-    // Increment views once when post renders
+    // Increment views once per session per product (dedup via sessionStorage)
     React.useEffect(() => {
         let isMounted = true;
+        const viewedKey = `viewed_${product.id}`;
+        if (sessionStorage.getItem(viewedKey)) return;
+        sessionStorage.setItem(viewedKey, '1');
+
         const incrementView = async () => {
             try {
                 const newViews = viewsCount + 1;
@@ -85,7 +89,7 @@ export const Post: React.FC<PostProps> = ({ product, index = 99 }) => {
 
     const handleShare = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        const shareUrl = `${window.location.origin}/api/product-og?id=${product.id}`;
+        const shareUrl = `${window.location.origin}/?product=${product.id}`;
 
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 

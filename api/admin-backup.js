@@ -23,9 +23,14 @@ function getSupabase() {
 export default async function handler(req, res) {
     res.setHeader('Content-Type', 'application/json');
 
-    // Auth check
+    // Auth check: admin token OR Vercel Cron secret
     const token = req.headers['x-admin-token'];
-    if (!token || !verifyToken(token)) {
+    const cronAuth = req.headers['authorization'];
+    const isCron = process.env.CRON_SECRET
+        ? cronAuth === `Bearer ${process.env.CRON_SECRET}`
+        : req.headers['user-agent']?.includes('vercel-cron');
+
+    if (!isCron && (!token || !verifyToken(token))) {
         return res.status(401).json({ error: '未授权' });
     }
 
@@ -47,8 +52,8 @@ export default async function handler(req, res) {
         }
     }
 
-    // --- CREATE backup ---
-    if (req.method === 'POST' && action === 'create') {
+    // --- CREATE backup (POST from admin UI, GET from Vercel Cron) ---
+    if ((req.method === 'POST' || req.method === 'GET') && action === 'create') {
         try {
             const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
             const label = body.label || '';
@@ -78,7 +83,7 @@ export default async function handler(req, res) {
             const { error: insertErr } = await supabase
                 .from('backups')
                 .insert([{
-                    label: label || `备份 ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}`,
+                    label: label || (isCron ? `⏰ 自动备份 ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}` : `备份 ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}`),
                     data: backupData,
                     record_count: backupData.record_count,
                 }]);

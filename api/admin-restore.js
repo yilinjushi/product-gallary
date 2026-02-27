@@ -100,7 +100,7 @@ export default async function handler(req, res) {
         const { error: delErr } = await supabase
             .from('products')
             .delete()
-            .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all rows
+            .not('id', 'is', null); // Delete all rows
         if (delErr) throw delErr;
 
         // --- Step 3: Insert restored products ---

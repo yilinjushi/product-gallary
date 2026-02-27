@@ -63,7 +63,7 @@ function SortableImageCard({
       className={`relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-white shadow-sm ${isDragging ? 'z-50 opacity-90 shadow-lg' : ''}`}
     >
       {item.type === 'url' ? (
-        <img src={item.url} alt="" className="w-full h-full object-cover" />
+        <img src={item.url} alt="product preview" className="w-full h-full object-cover" />
       ) : (
         <>
           <img
