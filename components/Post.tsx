@@ -89,7 +89,7 @@ export const Post: React.FC<PostProps> = ({ product, index = 99 }) => {
 
     const handleShare = async (e: React.MouseEvent) => {
         e.stopPropagation();
-        const shareUrl = `${window.location.origin}/?product=${product.id}`;
+        const shareUrl = `${window.location.origin}/api/product-og?id=${product.id}`;
 
         const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
