@@ -25,7 +25,8 @@ export type ViewState =
   | { type: 'list' }
   | { type: 'create' }
   | { type: 'edit'; product: Product }
-  | { type: 'settings' };
+  | { type: 'settings' }
+  | { type: 'backup' };
 
 export interface SiteSettings {
   id: number;

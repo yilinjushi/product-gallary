@@ -8,6 +8,7 @@ import { supabase, isConfigured } from './utils/supabaseClient';
 const ProductList = React.lazy(() => import('./components/ProductList').then(m => ({ default: m.ProductList })));
 const ProductForm = React.lazy(() => import('./components/ProductForm').then(m => ({ default: m.ProductForm })));
 const AdminSettings = React.lazy(() => import('./components/AdminSettings').then(m => ({ default: m.AdminSettings })));
+const AdminBackup = React.lazy(() => import('./components/AdminBackup').then(m => ({ default: m.AdminBackup })));
 const Auth = React.lazy(() => import('./components/Auth').then(m => ({ default: m.Auth })));
 const AdminLayout = React.lazy(() => import('./components/AdminLayout').then(m => ({ default: m.AdminLayout })));
 
@@ -412,6 +413,10 @@ const App: React.FC = () => {
                 settings={siteSettings}
                 onUpdate={(newSettings) => setSiteSettings(newSettings)}
               />
+            )}
+
+            {viewState.type === 'backup' && (
+              <AdminBackup />
             )}
           </>
         )}

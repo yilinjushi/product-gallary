@@ -7,7 +7,8 @@ import {
     X,
     LogOut,
     Smartphone,
-    Settings
+    Settings,
+    HardDriveDownload
 } from 'lucide-react';
 import { ViewState } from '../types';
 import { SidebarItem } from './SidebarItem';
@@ -98,6 +99,15 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                             setIsSidebarOpen(false);
                         }}
                     />
+                    <SidebarItem
+                        icon={<HardDriveDownload size={20} />}
+                        label="备份恢复"
+                        isActive={viewState.type === 'backup'}
+                        onClick={() => {
+                            setViewState({ type: 'backup' });
+                            setIsSidebarOpen(false);
+                        }}
+                    />
 
                     <div className="mt-8 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 px-2">Preview</div>
                     <SidebarItem
@@ -133,7 +143,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                         <Menu size={24} />
                     </button>
                     <span className="font-semibold text-slate-800">
-                        {viewState.type === 'create' ? 'New Product' : viewState.type === 'edit' ? 'Edit Product' : viewState.type === 'settings' ? 'Settings' : 'Inventory'}
+                        {viewState.type === 'create' ? 'New Product' : viewState.type === 'edit' ? 'Edit Product' : viewState.type === 'settings' ? 'Settings' : viewState.type === 'backup' ? '备份恢复' : 'Inventory'}
                     </span>
                     <div className="w-8" /> {/* Spacer */}
                 </header>
