@@ -226,7 +226,7 @@ const App: React.FC = () => {
   // --- Handlers ---
 
   const handleCreateProduct = async (data: ProductFormData) => {
-    if (!session) return;
+    if (!session?.token) return;
 
     try {
       const res = await fetch('/api/admin-products?action=create', {
@@ -241,10 +241,7 @@ const App: React.FC = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || '创建失败');
 
-      // Clear cache so public view refreshes
-      localStorage.removeItem('cachedProducts');
-
-      await fetchProducts(); // Refresh list
+      fetchProducts(); // Refresh list
       setViewState({ type: 'list' });
     } catch (error: any) {
       console.error("Error creating product:", error);
@@ -253,7 +250,7 @@ const App: React.FC = () => {
   };
 
   const handleUpdateProduct = async (id: string, data: ProductFormData) => {
-    if (!session) return;
+    if (!session?.token) return;
 
     try {
       const res = await fetch('/api/admin-products?action=update', {
@@ -268,8 +265,7 @@ const App: React.FC = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || '更新失败');
 
-      localStorage.removeItem('cachedProducts');
-      await fetchProducts();
+      fetchProducts();
       setViewState({ type: 'list' });
     } catch (error: any) {
       console.error("Error updating product:", error);
@@ -278,7 +274,7 @@ const App: React.FC = () => {
   };
 
   const handleDeleteProduct = async (id: string) => {
-    if (!session) return;
+    if (!session?.token) return;
 
     try {
       const res = await fetch('/api/admin-products?action=delete', {
@@ -293,10 +289,10 @@ const App: React.FC = () => {
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || '删除失败');
 
-      localStorage.removeItem('cachedProducts');
       setProducts(prev => prev.filter(p => p.id !== id));
-      // Optionally fetch again to be absolutely sure
-      // await fetchProducts();
+      // Also update localStorage cache
+      const updated = products.filter(p => p.id !== id);
+      try { localStorage.setItem('cachedProducts', JSON.stringify(updated)); } catch (e) { }
     } catch (error: any) {
       console.error("Error deleting product:", error);
       alert(error.message || "Failed to delete product");
@@ -304,7 +300,10 @@ const App: React.FC = () => {
   };
 
   const handleReorderProducts = async (reorderedProducts: Product[]) => {
+    if (!session?.token) return;
+
     // Optimistic update
+    const previousProducts = [...products];
     setProducts(reorderedProducts);
 
     try {
@@ -323,13 +322,14 @@ const App: React.FC = () => {
       });
 
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error || '排序保存失败');
+      if (!res.ok) throw new Error(result.error || '重排序失败');
 
-      localStorage.removeItem('cachedProducts');
+      // Update cache
+      try { localStorage.setItem('cachedProducts', JSON.stringify(reorderedProducts)); } catch (e) { }
     } catch (error: any) {
       console.error("Error reordering products:", error);
-      alert(error.message || "排序保存失败，已自动回滚");
-      fetchProducts(); // Rollback on failure
+      setProducts(previousProducts); // Rollback
+      alert(error.message || "Failed to reorder products");
     }
   };
 
