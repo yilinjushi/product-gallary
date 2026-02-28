@@ -228,20 +228,23 @@ const App: React.FC = () => {
   const handleCreateProduct = async (data: ProductFormData) => {
     if (!session) return;
 
-    // Optimistic Update (Optional, but let's stick to fetch for truth)
     try {
-      const { error } = await supabase.from('products').insert([{
-        title: data.title,
-        description: data.description,
-        images: data.images, // URLs from storage
-        tag: data.tag,
-        fav: data.fav,
-        views: data.views,
-        user_id: session.user.id
-      }]);
+      const res = await fetch('/api/admin-products?action=create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': session.token
+        },
+        body: JSON.stringify(data),
+      });
 
-      if (error) throw error;
-      fetchProducts(); // Refresh list
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || '创建失败');
+
+      // Clear cache so public view refreshes
+      localStorage.removeItem('cachedProducts');
+
+      await fetchProducts(); // Refresh list
       setViewState({ type: 'list' });
     } catch (error: any) {
       console.error("Error creating product:", error);
@@ -253,24 +256,24 @@ const App: React.FC = () => {
     if (!session) return;
 
     try {
-      const { error } = await supabase
-        .from('products')
-        .update({
-          title: data.title,
-          description: data.description,
-          images: data.images,
-          tag: data.tag,
-          fav: data.fav,
-          views: data.views
-        })
-        .eq('id', id);
+      const res = await fetch('/api/admin-products?action=update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': session.token
+        },
+        body: JSON.stringify({ id, ...data }),
+      });
 
-      if (error) throw error;
-      fetchProducts();
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || '更新失败');
+
+      localStorage.removeItem('cachedProducts');
+      await fetchProducts();
       setViewState({ type: 'list' });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating product:", error);
-      alert("Failed to update product");
+      alert(error.message || "Failed to update product");
     }
   };
 
@@ -278,12 +281,25 @@ const App: React.FC = () => {
     if (!session) return;
 
     try {
-      const { error } = await supabase.from('products').delete().eq('id', id);
-      if (error) throw error;
+      const res = await fetch('/api/admin-products?action=delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': session.token
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || '删除失败');
+
+      localStorage.removeItem('cachedProducts');
       setProducts(prev => prev.filter(p => p.id !== id));
-    } catch (error) {
+      // Optionally fetch again to be absolutely sure
+      // await fetchProducts();
+    } catch (error: any) {
       console.error("Error deleting product:", error);
-      alert("Failed to delete product");
+      alert(error.message || "Failed to delete product");
     }
   };
 
@@ -297,15 +313,22 @@ const App: React.FC = () => {
         sort_order: index
       }));
 
-      for (const u of updates) {
-        const { error } = await supabase
-          .from('products')
-          .update({ sort_order: u.sort_order })
-          .eq('id', u.id);
-        if (error) throw error;
-      }
-    } catch (error) {
+      const res = await fetch('/api/admin-products?action=reorder', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-token': session.token
+        },
+        body: JSON.stringify({ updates }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || '排序保存失败');
+
+      localStorage.removeItem('cachedProducts');
+    } catch (error: any) {
       console.error("Error reordering products:", error);
+      alert(error.message || "排序保存失败，已自动回滚");
       fetchProducts(); // Rollback on failure
     }
   };
