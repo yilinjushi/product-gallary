@@ -30,14 +30,14 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: '未授权' });
     }
 
-    const supabase = getSupabase();
-    const action = req.query.action || '';
-
-    if (req.method !== 'POST') {
-        return res.status(405).json({ error: '只支持 POST 方法' });
-    }
-
     try {
+        const supabase = getSupabase();
+        const action = req.query.action || '';
+
+        if (req.method !== 'POST') {
+            return res.status(405).json({ error: '只支持 POST 方法' });
+        }
+
         const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
 
         // --- CREATE ---
